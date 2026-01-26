@@ -6,9 +6,9 @@ dotenv.config();
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 // EmailJS Configuration from Environment Variables
-const SERVICE_ID = process.env.VITE_EMAILJS_SERVICE_ID || 'service_jet0yr2';
-const TEMPLATE_ID = process.env.VITE_EMAILJS_TEMPLATE_ID || 'template_s4r7onh';
-const PUBLIC_KEY = process.env.VITE_EMAILJS_PUBLIC_KEY || 'a2SI6bSsu-uNvR5rM';
+const SERVICE_ID = process.env.EMAILJS_SERVICE_ID || 'service_jet0yr2';
+const TEMPLATE_ID = process.env.EMAILJS_TEMPLATE_ID || 'template_s4r7onh';
+const PUBLIC_KEY = process.env.EMAILJS_PUBLIC_KEY || 'a2SI6bSsu-uNvR5rM';
 const PRIVATE_KEY = process.env.EMAILJS_PRIVATE_KEY || 'GTIWDPiHO58Ax7m-f3K91';
 
 // Email templates mapping to text messages for EmailJS
