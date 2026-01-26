@@ -141,6 +141,21 @@ export function DataProvider({ children }) {
         }
     }, [jobs])
 
+    // Refresh jobs from API
+    const refreshJobs = useCallback(async (params = {}) => {
+        if (USE_API) {
+            try {
+                const response = await jobsAPI.getJobs({ limit: 100, ...params })
+                const jobsData = response?.data?.jobs || response?.jobs || []
+                setJobs(jobsData)
+                return { success: true, jobs: jobsData }
+            } catch (error) {
+                return { success: false, error: error.message }
+            }
+        }
+        return { success: true, jobs }
+    }, [jobs])
+
     // Apply to job
     const applyToJob = useCallback(async (jobId, freelancerId, proposalData = {}) => {
         try {
@@ -175,20 +190,7 @@ export function DataProvider({ children }) {
         }
     }, [jobs, refreshJobs])
 
-    // Refresh jobs from API
-    const refreshJobs = useCallback(async (params = {}) => {
-        if (USE_API) {
-            try {
-                const response = await jobsAPI.getJobs({ limit: 100, ...params })
-                const jobsData = response?.data?.jobs || response?.jobs || []
-                setJobs(jobsData)
-                return { success: true, jobs: jobsData }
-            } catch (error) {
-                return { success: false, error: error.message }
-            }
-        }
-        return { success: true, jobs }
-    }, [jobs])
+
 
     // Helper functions
     const getJobById = useCallback((id) => {
