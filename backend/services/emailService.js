@@ -200,7 +200,7 @@ export const sendEmail = async (to, templateName, templateData) => {
 
         if (transporter) {
             await transporter.sendMail({
-                from: process.env.SMTP_FROM || 'noreply@freequo.com',
+                from: process.env.SMTP_FROM || 'freequoo@gmail.com',
                 to,
                 subject,
                 html
