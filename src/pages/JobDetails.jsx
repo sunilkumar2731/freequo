@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useData } from '../context/DataContext'
 import { useAuth } from '../context/AuthContext'
@@ -12,7 +12,8 @@ import {
     Users,
     CheckCircle,
     AlertCircle,
-    User
+    User,
+    X
 } from 'lucide-react'
 import './JobDetails.css'
 
@@ -24,6 +25,14 @@ function JobDetails() {
 
     const [applying, setApplying] = useState(false)
     const [applied, setApplied] = useState(false)
+    const [showModal, setShowModal] = useState(false)
+    const [error, setError] = useState(null)
+    const [proposalData, setProposalData] = useState({
+        coverLetter: '',
+        proposedBudget: '',
+        proposedDuration: '',
+        relevantExperience: ''
+    })
 
     // Safety check for data context
     if (!dataContext) {
@@ -41,15 +50,20 @@ function JobDetails() {
     }
 
     const { getJobById, applyToJob, loading } = dataContext
-
-    console.log('JobDetails - ID from URL:', id)
-    console.log('JobDetails - Loading:', loading)
-
     const job = getJobById ? getJobById(id) : null
 
-    console.log('JobDetails - Job found:', job)
+    // Initialize proposal data when job is loaded
+    useEffect(() => {
+        if (job) {
+            setProposalData({
+                coverLetter: '',
+                proposedBudget: job.budget || '',
+                proposedDuration: job.duration || '',
+                relevantExperience: ''
+            })
+        }
+    }, [job])
 
-    // Show loading state
     if (loading) {
         return (
             <div className="job-details-page page">
@@ -79,26 +93,46 @@ function JobDetails() {
         )
     }
 
-    // Safety checks for job data
-    const hasApplied = user && Array.isArray(job.applicants) && job.applicants.includes(user.id)
+    const hasApplied = user && Array.isArray(job.applicants) &&
+        (job.applicants.includes(user.id) || job.applicants.some(a => a === user.id || a._id === user.id))
     const isOwner = user && (job.clientId === user.id || job.client === user.id || job.client?._id === user.id)
-    const canApply = isAuthenticated && user?.role === 'freelancer' && !hasApplied && !isOwner
+    const canApply = isAuthenticated && user?.role === 'freelancer' && !hasApplied && !isOwner && !applied
 
-    const handleApply = () => {
+    const handleApplyClick = () => {
         if (!isAuthenticated) {
             navigate('/login')
             return
         }
+        setShowModal(true)
+    }
 
+    const handleApplySubmit = async (e) => {
+        if (e) e.preventDefault()
+
+        setError(null)
         setApplying(true)
-        setTimeout(() => {
-            applyToJob(job._id || job.id, user.id)
-            setApplying(false)
+
+        const result = await applyToJob(job._id || job.id, user.id, proposalData)
+
+        setApplying(false)
+        if (result.success) {
             setApplied(true)
-        }, 800)
+            setShowModal(false)
+        } else {
+            setError(result.error || 'Failed to submit application')
+        }
+    }
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target
+        setProposalData(prev => ({
+            ...prev,
+            [name]: value
+        }))
     }
 
     const formatDate = (dateString) => {
+        if (!dateString) return 'Just now'
         return new Date(dateString).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'long',
@@ -107,6 +141,7 @@ function JobDetails() {
     }
 
     const formatBudget = () => {
+        if (!job.budget) return 'Contact for budget'
         if (job.budgetType === 'hourly') {
             return `$${job.budget}/hour`
         }
@@ -116,14 +151,12 @@ function JobDetails() {
     return (
         <div className="job-details-page page">
             <div className="container">
-                {/* Back Button */}
                 <Link to="/jobs" className="back-link">
                     <ArrowLeft size={18} />
                     Back to Jobs
                 </Link>
 
                 <div className="job-details-grid">
-                    {/* Main Content */}
                     <div className="job-main-content">
                         <div className="job-header-card">
                             <div className="job-status-row">
@@ -140,11 +173,11 @@ function JobDetails() {
 
                             <div className="job-client">
                                 <div className="client-avatar">
-                                    {job.clientName?.charAt(0)}
+                                    {job.clientName?.charAt(0) || job.client?.name?.charAt(0) || 'C'}
                                 </div>
                                 <div>
-                                    <div className="client-name">{job.clientName}</div>
-                                    <div className="client-company">{job.company}</div>
+                                    <div className="client-name">{job.clientName || job.client?.name}</div>
+                                    <div className="client-company">{job.company || job.client?.company}</div>
                                 </div>
                             </div>
 
@@ -194,26 +227,26 @@ function JobDetails() {
                             </div>
                         </div>
 
-                        {/* Applicants Section (for job owner) */}
                         {isOwner && job.applicants && Array.isArray(job.applicants) && job.applicants.length > 0 && (
                             <div className="job-section">
                                 <h2>Applicants ({job.applicants.length})</h2>
                                 <div className="applicants-list">
-                                    {job.applicants.map((applicantId) => {
-                                        const applicant = getUserById(applicantId)
-                                        if (!applicant) return null
+                                    {job.applicants.map((applicant) => {
+                                        const applicantId = typeof applicant === 'string' ? applicant : applicant._id || applicant.id
+                                        const applicantData = typeof applicant === 'object' ? applicant : getUserById(applicantId)
+                                        if (!applicantData) return null
                                         return (
                                             <Link
-                                                to={`/freelancer/${applicant.id}`}
+                                                to={`/freelancer/${applicantId}`}
                                                 key={applicantId}
                                                 className="applicant-card"
                                             >
                                                 <div className="applicant-avatar">
-                                                    {applicant.name?.charAt(0)}
+                                                    {applicantData.name?.charAt(0)}
                                                 </div>
                                                 <div className="applicant-info">
-                                                    <div className="applicant-name">{applicant.name}</div>
-                                                    <div className="applicant-title">{applicant.title || 'Freelancer'}</div>
+                                                    <div className="applicant-name">{applicantData.name}</div>
+                                                    <div className="applicant-title">{applicantData.title || 'Freelancer'}</div>
                                                 </div>
                                                 <span className="view-profile">View Profile</span>
                                             </Link>
@@ -224,7 +257,6 @@ function JobDetails() {
                         )}
                     </div>
 
-                    {/* Sidebar */}
                     <div className="job-sidebar">
                         <div className="sidebar-card">
                             <div className="budget-display">
@@ -252,13 +284,13 @@ function JobDetails() {
                                 </div>
                             </div>
 
-                            {canApply && !applied && (
+                            {canApply && (
                                 <button
                                     className="btn btn-primary btn-lg apply-btn"
-                                    onClick={handleApply}
+                                    onClick={handleApplyClick}
                                     disabled={applying}
                                 >
-                                    {applying ? 'Submitting...' : 'Apply Now'}
+                                    Apply Now
                                 </button>
                             )}
 
@@ -300,6 +332,99 @@ function JobDetails() {
                     </div>
                 </div>
             </div>
+
+            {/* Apply Modal */}
+            {showModal && (
+                <div className="modal-overlay" onClick={() => setShowModal(false)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
+                            <h3 style={{ margin: 0 }}>Submit Proposal</h3>
+                            <button onClick={() => setShowModal(false)} style={{ color: 'var(--gray-400)' }}>
+                                <X size={24} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleApplySubmit} style={{ padding: '1.5rem' }}>
+                            {error && (
+                                <div className="alert alert-danger" style={{ marginBottom: '1.5rem', padding: '1rem', background: '#fee2e2', color: '#b91c1c', borderRadius: 'var(--radius-md)' }}>
+                                    {error}
+                                </div>
+                            )}
+
+                            <div className="form-group">
+                                <label className="form-label">Cover Letter</label>
+                                <textarea
+                                    className="form-textarea"
+                                    name="coverLetter"
+                                    placeholder="Explain why you're a good fit for this project..."
+                                    value={proposalData.coverLetter}
+                                    onChange={handleInputChange}
+                                    required
+                                    rows={6}
+                                />
+                            </div>
+
+                            <div className="grid-2 grid" style={{ marginBottom: '1.25rem' }}>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label className="form-label">Proposed Budget ($)</label>
+                                    <input
+                                        type="number"
+                                        className="form-input"
+                                        name="proposedBudget"
+                                        value={proposalData.proposedBudget}
+                                        onChange={handleInputChange}
+                                        required
+                                        min="1"
+                                    />
+                                </div>
+                                <div className="form-group" style={{ marginBottom: 0 }}>
+                                    <label className="form-label">Proposed Duration</label>
+                                    <input
+                                        type="text"
+                                        className="form-input"
+                                        name="proposedDuration"
+                                        placeholder="e.g. 2 weeks"
+                                        value={proposalData.proposedDuration}
+                                        onChange={handleInputChange}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label className="form-label">Relevant Experience (Optional)</label>
+                                <textarea
+                                    className="form-textarea"
+                                    name="relevantExperience"
+                                    placeholder="Mention similar projects you've worked on..."
+                                    value={proposalData.relevantExperience}
+                                    onChange={handleInputChange}
+                                    rows={3}
+                                />
+                            </div>
+
+                            <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem' }}>
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={() => setShowModal(false)}
+                                    style={{ flex: 1 }}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    disabled={applying}
+                                    style={{ flex: 1 }}
+                                >
+                                    {applying ? 'Submitting...' : 'Submit Proposal'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

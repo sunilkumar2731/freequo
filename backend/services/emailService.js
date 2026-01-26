@@ -199,19 +199,21 @@ export const sendEmail = async (to, templateName, templateData) => {
         }
 
         if (transporter) {
+            console.log(`📤 Attempting to send email to ${to}...`);
             await transporter.sendMail({
                 from: process.env.SMTP_FROM || 'freequoo@gmail.com',
                 to,
                 subject,
                 html
             });
-            console.log(`📧 Email sent to ${to}: ${subject}`);
+            console.log(`✅ Email sent successfully to ${to}: ${subject}`);
             return true;
         }
 
+        console.warn(`🛑 Transporter not configured. Email to ${to} not sent.`);
         return false;
     } catch (error) {
-        console.error('Error sending email:', error);
+        console.error(`❌ Error sending email to ${to}:`, error);
         return false;
     }
 };

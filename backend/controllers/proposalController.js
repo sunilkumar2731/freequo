@@ -1,3 +1,4 @@
+import Proposal from '../models/Proposal.js';
 import Job from '../models/Job.js';
 import Notification from '../models/Notification.js';
 import { sendProposalReceivedEmail, sendProposalSubmittedEmail } from '../services/emailService.js';

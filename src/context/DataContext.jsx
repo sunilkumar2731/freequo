@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { jobsAPI } from '../services/api'
+import { jobsAPI, proposalsAPI } from '../services/api'
 import { initialJobs } from '../data/jobsData'
 import { useAuth } from './AuthContext'
 
@@ -142,11 +142,22 @@ export function DataProvider({ children }) {
     }, [jobs])
 
     // Apply to job
-    const applyToJob = useCallback(async (jobId, freelancerId) => {
+    const applyToJob = useCallback(async (jobId, freelancerId, proposalData = {}) => {
         try {
             if (USE_API) {
-                // This is handled by proposals API now
-                return { success: true }
+                // Return response data to the caller
+                const response = await proposalsAPI.createProposal({
+                    jobId,
+                    coverLetter: proposalData.coverLetter || "I am interested in this job and have the required skills.",
+                    proposedBudget: proposalData.proposedBudget || 500, // Default if not provided
+                    proposedDuration: proposalData.proposedDuration || "1 month",
+                    relevantExperience: proposalData.relevantExperience || ""
+                })
+
+                // Refresh jobs to show updated status
+                await refreshJobs()
+
+                return { success: true, data: response.data }
             } else {
                 // Demo mode
                 const updatedJobs = jobs.map(job => {
@@ -159,9 +170,10 @@ export function DataProvider({ children }) {
                 return { success: true }
             }
         } catch (error) {
-            return { success: false, error: error.message }
+            console.error('Apply to job error:', error)
+            return { success: false, error: error.message || 'Failed to submit application' }
         }
-    }, [jobs])
+    }, [jobs, refreshJobs])
 
     // Refresh jobs from API
     const refreshJobs = useCallback(async (params = {}) => {
