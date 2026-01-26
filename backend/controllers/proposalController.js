@@ -64,30 +64,21 @@ export const createProposal = async (req, res) => {
             actionUrl: `/jobs/${job._id}`
         });
 
-        // Send email notification to client
-        try {
-            if (job.client && job.client.email) {
-                await sendProposalReceivedEmail(
-                    job.client.email,
-                    job.client.name,
-                    req.user.name,
-                    job.title
-                );
-            }
-        } catch (emailError) {
-            console.error('Failed to send proposal received email:', emailError);
-        }
-
-        // Send confirmation email to freelancer (the one who applied)
-        try {
-            await sendProposalSubmittedEmail(
-                req.user.email,
+        // Send emails in background - do not await to prevent blocking the response
+        if (job.client && job.client.email) {
+            sendProposalReceivedEmail(
+                job.client.email,
+                job.client.name,
                 req.user.name,
                 job.title
-            );
-        } catch (emailError) {
-            console.error('Failed to send proposal submission confirmation:', emailError);
+            ).catch(err => console.error('Background email error (client):', err));
         }
+
+        sendProposalSubmittedEmail(
+            req.user.email,
+            req.user.name,
+            job.title
+        ).catch(err => console.error('Background email error (freelancer):', err));
 
         // Populate and return
         await proposal.populate('freelancer', 'name title avatar rating completedJobs skills hourlyRate');

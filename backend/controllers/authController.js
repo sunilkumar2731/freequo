@@ -62,12 +62,10 @@ export const register = async (req, res) => {
             actionUrl: role === 'freelancer' ? '/freelancer/edit-profile' : '/client/dashboard'
         });
 
-        // Send welcome email
-        try {
-            await sendWelcomeEmail(user.email, user.name, user.role);
-        } catch (emailError) {
-            console.error('Failed to send welcome email:', emailError);
-        }
+        // Send welcome email (Background - do not await)
+        sendWelcomeEmail(user.email, user.name, user.role).catch(err => {
+            console.error('Background welcome email error:', err);
+        });
 
         res.status(201).json({
             success: true,

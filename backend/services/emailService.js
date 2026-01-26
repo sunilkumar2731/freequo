@@ -26,13 +26,18 @@ if (process.env.SMTP_HOST) {
         }
     });
 } else if (EMAIL_USER && EMAIL_PASSWORD) {
-    // Default to Gmail if user/pass provided without host (common for development)
+    // Default to Gmail using the most reliable settings for cloud environments
     transporter = nodemailer.createTransport({
-        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true, // Use SSL
         auth: {
             user: EMAIL_USER,
             pass: EMAIL_PASSWORD
-        }
+        },
+        connectionTimeout: 10000, // 10 seconds
+        greetingTimeout: 10000,
+        socketTimeout: 10000
     });
 }
 
