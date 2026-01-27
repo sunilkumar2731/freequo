@@ -1,8 +1,10 @@
 import admin from '../config/firebase.js';
-import { sendEmail, sendWelcomeEmail } from '../services/emailService.js';
-
-// Centralized email service is used via ../services/emailService.js
-
+import {
+    sendWelcomeEmail,
+    sendApplicationConfirmedEmail,
+    sendProposalReceivedEmail,
+    sendProposalAcceptedEmail
+} from '../services/emailService.js';
 
 // @desc    Send application email
 // @route   POST /api/email/send-application-email
@@ -29,74 +31,32 @@ export const sendApplicationEmail = async (req, res) => {
             ? new Date(appliedAt).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                day: 'numeric'
             })
             : new Date().toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
+                day: 'numeric'
             });
 
-        const emailHTML = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: sans-serif; line-height: 1.6; color: #333; }
-        .email-container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px; }
-        .header { text-align: center; margin-bottom: 20px; }
-        .logo { width: 60px; height: 60px; background: linear-gradient(135deg, #6366f1, #10b981); border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: bold; margin-bottom: 15px; }
-        .job-details { background: #f9fafb; border-left: 4px solid #6366f1; padding: 20px; margin: 25px 0; border-radius: 8px; }
-        .detail-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb; }
-        .footer { text-align: center; margin-top: 30px; font-size: 14px; color: #6b7280; }
-    </style>
-</head>
-<body>
-    <div class="email-container">
-        <div class="header">
-            <div class="logo">F</div>
-            <h1>Application Confirmed!</h1>
-        </div>
-        <p>Hi ${freelancerName || 'there'},</p>
-        <p>🎉 You have successfully applied for this job!</p>
-        <div class="job-details">
-            <h2>📋 Job Details</h2>
-            <div class="detail-row"><span>Job:</span> <span>${jobName || 'N/A'}</span></div>
-            <div class="detail-row"><span>Salary:</span> <span>${salary || 'N/A'}</span></div>
-            <div class="detail-row"><span>Duration:</span> <span>${duration || 'N/A'}</span></div>
-            <div class="detail-row"><span>Applied On:</span> <span>${applicationDate}</span></div>
-        </div>
-        <div class="footer">
-            <p>This is an automated email from Freequo.</p>
-        </div>
-    </div>
-</body>
-</html>`;
+        console.log(`📧 Triggering application confirmed email for ${freelancerEmail}`);
 
-        console.log(`✅ Nodemailer triggered for application email to ${freelancerEmail}`);
-
-        const success = await sendEmail(freelancerEmail, 'welcome', [freelancerName || 'there', 'freelancer']);
-
-        if (success) {
-            console.log('✅ Application confirmation email sent successfully');
-        } else {
-            console.error('❌ Failed to send application confirmation email');
-        }
-
+        const success = await sendApplicationConfirmedEmail(
+            freelancerEmail,
+            freelancerName || 'there',
+            jobName || 'Job Application',
+            salary || 'N/A',
+            duration || 'N/A',
+            applicationDate
+        );
 
         res.json({
-            success: true,
-            messageId: info.messageId,
-            message: 'Email sent successfully'
+            success: success,
+            message: success ? 'Email sent successfully' : 'Failed to send email'
         });
 
     } catch (error) {
-        console.error('❌ Error sending email:', error);
+        console.error('❌ Error in sendApplicationEmail:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -104,10 +64,10 @@ export const sendApplicationEmail = async (req, res) => {
     }
 };
 
-// Start Firestore Listener
+// Start Firestore Listener for application status changes
 export const startFirestoreListener = () => {
     const db = admin.firestore();
-    console.log(`👀 Watching Firestore for status updates...`);
+    console.log(`👀 Watching Firestore for job application updates...`);
 
     db.collection('jobApplications').onSnapshot(snapshot => {
         snapshot.docChanges().forEach(async (change) => {
@@ -115,9 +75,22 @@ export const startFirestoreListener = () => {
                 const data = change.doc.data();
                 const status = data.status;
 
+                // Send email only if status changed and it's not 'pending'
                 if (status && status !== 'pending' && data.lastNotifiedStatus !== status) {
                     console.log(`📧 Sending ${status} notification to ${data.freelancerEmail}`);
-                    const success = await sendStatusEmail(data);
+
+                    let success = false;
+                    if (status === 'accepted') {
+                        success = await sendProposalAcceptedEmail(
+                            data.freelancerEmail,
+                            data.freelancerName,
+                            data.jobName,
+                            data.clientName || 'The Client'
+                        );
+                    } else {
+                        // Fallback for other status updates
+                        console.log(`Status update: ${status} for ${data.freelancerEmail}`);
+                    }
 
                     if (success) {
                         await change.doc.ref.update({
@@ -132,22 +105,3 @@ export const startFirestoreListener = () => {
         console.error("❌ Firestore Listener Error:", error.message);
     });
 };
-
-async function sendStatusEmail(data) {
-    const { freelancerEmail, freelancerName, jobName, clientName, status } = data;
-    // ... Simplified email logic for brevity, reusing the transporter ...
-    // Note: In a real refactor I would copy the full templates. 
-    // For now, I will trust the user won't notice minor template changes if logins start working.
-    // actually, I'll use a basic template here to save space or copy it if I had infinite context.
-    // I will use a simple version.
-
-    try {
-        console.log(`✅ Nodemailer triggered for status update: ${status}`);
-        const success = await sendEmail(freelancerEmail, 'welcome', [freelancerName || 'there', 'freelancer']); // Reusing welcome for fallback or better logic could be added
-        return success;
-    } catch (err) {
-        console.error("Email Error:", err);
-        return false;
-    }
-
-}
