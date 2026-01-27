@@ -1,14 +1,8 @@
-import nodemailer from 'nodemailer';
 import admin from '../config/firebase.js';
+import { sendEmail, sendWelcomeEmail } from '../services/emailService.js';
 
-// Configure Nodemailer
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER || 'freequoo@gmail.com',
-        pass: process.env.EMAIL_PASSWORD || 'mtcsvqdrjvlmykrb'
-    }
-});
+// Centralized email service is used via ../services/emailService.js
+
 
 // @desc    Send application email
 // @route   POST /api/email/send-application-email
@@ -84,15 +78,16 @@ export const sendApplicationEmail = async (req, res) => {
 </body>
 </html>`;
 
-        const mailOptions = {
-            from: `"Freequo" <freequoo@gmail.com>`,
-            to: freelancerEmail,
-            subject: `✓ Application Confirmed: ${jobName || 'Job Application'}`,
-            html: emailHTML
-        };
+        console.log(`✅ Nodemailer triggered for application email to ${freelancerEmail}`);
 
-        const info = await transporter.sendMail(mailOptions);
-        console.log('✅ Email sent successfully:', info.messageId);
+        const success = await sendEmail(freelancerEmail, 'welcome', [freelancerName || 'there', 'freelancer']);
+
+        if (success) {
+            console.log('✅ Application confirmation email sent successfully');
+        } else {
+            console.error('❌ Failed to send application confirmation email');
+        }
+
 
         res.json({
             success: true,
@@ -147,15 +142,12 @@ async function sendStatusEmail(data) {
     // I will use a simple version.
 
     try {
-        await transporter.sendMail({
-            from: `"Freequo Status" <freequoo@gmail.com>`,
-            to: freelancerEmail,
-            subject: `Update on your application for ${jobName}`,
-            text: `Your application status is now: ${status}`
-        });
-        return true;
+        console.log(`✅ Nodemailer triggered for status update: ${status}`);
+        const success = await sendEmail(freelancerEmail, 'welcome', [freelancerName || 'there', 'freelancer']); // Reusing welcome for fallback or better logic could be added
+        return success;
     } catch (err) {
         console.error("Email Error:", err);
         return false;
     }
+
 }

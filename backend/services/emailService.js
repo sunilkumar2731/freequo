@@ -81,7 +81,50 @@ const emailTemplates = {
                 </div>
             </div>
         `
+    }),
+
+    jobPosted: (name, jobTitle) => ({
+        subject: `Successfully posted: ${jobTitle} 🚀`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">Job Posted!</h1>
+                </div>
+                <div style="padding: 30px; background: white;">
+                    <h2 style="color: #333;">Hi ${name}!</h2>
+                    <p style="color: #666; line-height: 1.6;">
+                        Your job "<strong>${jobTitle}</strong>" has been successfully posted on Freequo. 
+                        You'll receive notifications when freelancers submit proposals.
+                    </p>
+                    <a href="${process.env.FRONTEND_URL || 'https://freequo-frontend.onrender.com'}/client/dashboard" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">
+                        View Dashboard
+                    </a>
+                </div>
+            </div>
+        `
+    }),
+
+    proposalAccepted: (freelancerName, jobTitle, clientName) => ({
+        subject: `Congratulations! Your proposal for "${jobTitle}" was accepted! 🎊`,
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 40px; text-align: center;">
+                    <h1 style="color: white; margin: 0;">Proposal Accepted!</h1>
+                </div>
+                <div style="padding: 30px; background: white;">
+                    <h2 style="color: #333;">Hi ${freelancerName}!</h2>
+                    <p style="color: #666; line-height: 1.6;">
+                        Great news! <strong>${clientName}</strong> has accepted your proposal for "<strong>${jobTitle}</strong>".
+                        You can now start working on the project.
+                    </p>
+                    <a href="${process.env.FRONTEND_URL || 'https://freequo-frontend.onrender.com'}/freelancer/dashboard" style="display: inline-block; background: #11998e; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        `
     })
+
 };
 
 /**
@@ -102,6 +145,7 @@ export const sendEmail = async (to, templateName, templateData) => {
             return false;
         }
 
+        console.log(`✅ Nodemailer triggered for ${to} [Template: ${templateName}]`);
         console.log(`📤 Sending Nodemailer email to ${to}: ${subject}...`);
 
         const info = await transporter.sendMail({
@@ -129,9 +173,17 @@ export const sendProposalReceivedEmail = (email, clientName, freelancerName, job
 export const sendProposalSubmittedEmail = (email, freelancerName, jobTitle) =>
     sendEmail(email, 'proposalSubmitted', [freelancerName, jobTitle]);
 
+export const sendJobPostedEmail = (email, name, jobTitle) =>
+    sendEmail(email, 'jobPosted', [name, jobTitle]);
+
+export const sendProposalAcceptedEmail = (email, freelancerName, jobTitle, clientName) =>
+    sendEmail(email, 'proposalAccepted', [freelancerName, jobTitle, clientName]);
+
 export default {
     sendEmail,
     sendWelcomeEmail,
     sendProposalReceivedEmail,
-    sendProposalSubmittedEmail
+    sendProposalSubmittedEmail,
+    sendJobPostedEmail,
+    sendProposalAcceptedEmail
 };
