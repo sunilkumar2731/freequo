@@ -1,136 +1,22 @@
-import nodemailer from 'nodemailer';
+import axios from 'axios';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-
-// Nodemailer Configuration
-// Using Port 465 (SSL) which is the most reliable for cloud environments
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD
-    }
-});
-
-// Email templates
-const emailTemplates = {
-    welcome: (name, role) => ({
-        subject: 'Welcome to Freequo! 🎉',
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">Welcome to Freequo!</h1>
-                </div>
-                <div style="padding: 30px; background: white;">
-                    <h2 style="color: #333;">Hi ${name}! 👋</h2>
-                    <p style="color: #666; line-height: 1.6;">
-                        ${role === 'client'
-                ? 'Thank you for joining Freequo! You can now post jobs and find talented freelancers for your projects.'
-                : 'Thank you for joining Freequo! Complete your profile and start applying to jobs to grow your freelance career.'}
-                    </p>
-                    <a href="${process.env.FRONTEND_URL || 'https://freequo-frontend.onrender.com'}" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">
-                        Get Started
-                    </a>
-                </div>
-                <div style="padding: 20px; text-align: center; color: #999; font-size: 12px; background: #f9f9f9;">
-                    © 2024 Freequo Market. All rights reserved.
-                </div>
-            </div>
-        `
-    }),
-
-    proposalReceived: (clientName, freelancerName, jobTitle) => ({
-        subject: `New proposal for "${jobTitle}" 📬`,
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">New Proposal!</h1>
-                </div>
-                <div style="padding: 30px; background: white;">
-                    <h2 style="color: #333;">Hi ${clientName}!</h2>
-                    <p style="color: #666; line-height: 1.6;">
-                        Great news! <strong>${freelancerName}</strong> has submitted a proposal for your job "<strong>${jobTitle}</strong>".
-                    </p>
-                    <a href="${process.env.FRONTEND_URL || 'https://freequo-frontend.onrender.com'}/client/dashboard" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">
-                        Review Proposal
-                    </a>
-                </div>
-            </div>
-        `
-    }),
-
-    proposalSubmitted: (freelancerName, jobTitle) => ({
-        subject: `Application submitted: ${jobTitle} 📝`,
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 40px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">Application Sent!</h1>
-                </div>
-                <div style="padding: 30px; background: white;">
-                    <h2 style="color: #333;">Hi ${freelancerName}!</h2>
-                    <p style="color: #666; line-height: 1.6;">
-                        You have successfully applied for "<strong>${jobTitle}</strong>". 
-                        The client has been notified and will review your proposal.
-                    </p>
-                    <a href="${process.env.FRONTEND_URL || 'https://freequo-frontend.onrender.com'}/freelancer/dashboard" style="display: inline-block; background: #11998e; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">
-                        View Applications
-                    </a>
-                </div>
-            </div>
-        `
-    }),
-
-    jobPosted: (name, jobTitle) => ({
-        subject: `Successfully posted: ${jobTitle} 🚀`,
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">Job Posted!</h1>
-                </div>
-                <div style="padding: 30px; background: white;">
-                    <h2 style="color: #333;">Hi ${name}!</h2>
-                    <p style="color: #666; line-height: 1.6;">
-                        Your job "<strong>${jobTitle}</strong>" has been successfully posted on Freequo. 
-                        You'll receive notifications when freelancers submit proposals.
-                    </p>
-                    <a href="${process.env.FRONTEND_URL || 'https://freequo-frontend.onrender.com'}/client/dashboard" style="display: inline-block; background: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">
-                        View Dashboard
-                    </a>
-                </div>
-            </div>
-        `
-    }),
-
-    proposalAccepted: (freelancerName, jobTitle, clientName) => ({
-        subject: `Congratulations! Your proposal for "${jobTitle}" was accepted! 🎊`,
-        html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 40px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">Proposal Accepted!</h1>
-                </div>
-                <div style="padding: 30px; background: white;">
-                    <h2 style="color: #333;">Hi ${freelancerName}!</h2>
-                    <p style="color: #666; line-height: 1.6;">
-                        Great news! <strong>${clientName}</strong> has accepted your proposal for "<strong>${jobTitle}</strong>".
-                        You can now start working on the project.
-                    </p>
-                    <a href="${process.env.FRONTEND_URL || 'https://freequo-frontend.onrender.com'}/freelancer/dashboard" style="display: inline-block; background: #11998e; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin-top: 20px; font-weight: bold;">
-                        Get Started
-                    </a>
-                </div>
-            </div>
-        `
-    })
-
-};
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const SENDER_EMAIL = process.env.EMAIL_USER || 'freequoo@gmail.com';
+const SENDER_NAME = 'Freequo';
 
 /**
- * Send email via Nodemailer
+ * Centralized function to send email via Brevo REST API (HTTPS)
+ * This bypasses Render's SMTP block.
  */
 export const sendEmail = async (to, templateName, templateData) => {
+    if (!BREVO_API_KEY) {
+        console.warn('🛑 BREVO_API_KEY missing. Cannot send email to:', to);
+        return false;
+    }
+
     try {
         const template = emailTemplates[templateName];
         if (!template) {
@@ -140,50 +26,75 @@ export const sendEmail = async (to, templateName, templateData) => {
 
         const { subject, html } = template(...templateData);
 
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-            console.warn(`🛑 Email credentials missing. Notification to ${to} not sent.`);
-            return false;
-        }
+        console.log(`✅ Attempting to send email to ${to} via Brevo API...`);
 
-        console.log(`✅ Nodemailer triggered for ${to} [Template: ${templateName}]`);
-        console.log(`📤 Sending Nodemailer email to ${to}: ${subject}...`);
-
-        const info = await transporter.sendMail({
-            from: `"Freequo" <${process.env.EMAIL_USER}>`,
-            to,
-            subject,
-            html
+        const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+            sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+            to: [{ email: to }],
+            subject: subject,
+            htmlContent: html
+        }, {
+            headers: {
+                'api-key': BREVO_API_KEY,
+                'Content-Type': 'application/json'
+            }
         });
 
-        console.log(`✅ Email sent successfully: ${info.messageId}`);
-        return true;
+        if (response.status === 201 || response.status === 200) {
+            console.log(`✅ Email sent successfully via Brevo! ID: ${response.data.messageId}`);
+            return true;
+        }
+
+        return false;
     } catch (error) {
-        console.error(`❌ Nodemailer Error for ${to}:`, error.message);
+        console.error(`❌ Brevo API Error for ${to}:`, error.response?.data || error.message);
         return false;
     }
 };
 
-// Helper functions
-export const sendWelcomeEmail = (email, name, role) =>
-    sendEmail(email, 'welcome', [name, role]);
+// --- Email Templates ---
+const emailTemplates = {
+    welcome: (name, role) => ({
+        subject: 'Welcome to Freequo! 🎉',
+        html: `
+            <div style="font-family: Arial; max-width: 600px; margin: 0 auto; border: 1px solid #eee; border-radius: 10px; overflow: hidden;">
+                <div style="background: #667eea; padding: 40px; text-align: center; color: white;">
+                    <h1>Welcome ${name}!</h1>
+                </div>
+                <div style="padding: 30px;">
+                    <p>Thank you for joining Freequo. You are now registered as a <strong>${role}</strong>.</p>
+                    <a href="https://freequo-frontend.onrender.com" style="background: #667eea; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Get Started</a>
+                </div>
+            </div>
+        `
+    }),
 
-export const sendProposalReceivedEmail = (email, clientName, freelancerName, jobTitle) =>
-    sendEmail(email, 'proposalReceived', [clientName, freelancerName, jobTitle]);
+    proposalReceived: (clientName, freelancerName, jobTitle) => ({
+        subject: `New proposal for "${jobTitle}" 📬`,
+        html: `<h3>Hi ${clientName},</h3><p><strong>${freelancerName}</strong> has submitted a proposal for "<strong>${jobTitle}</strong>".</p>`
+    }),
 
-export const sendProposalSubmittedEmail = (email, freelancerName, jobTitle) =>
-    sendEmail(email, 'proposalSubmitted', [freelancerName, jobTitle]);
+    proposalSubmitted: (freelancerName, jobTitle) => ({
+        subject: `Application submitted: ${jobTitle} 📝`,
+        html: `<h3>Hi ${freelancerName},</h3><p>You have successfully applied for "<strong>${jobTitle}</strong>".</p>`
+    }),
 
-export const sendJobPostedEmail = (email, name, jobTitle) =>
-    sendEmail(email, 'jobPosted', [name, jobTitle]);
+    jobPosted: (name, jobTitle) => ({
+        subject: `Successfully posted: ${jobTitle} 🚀`,
+        html: `<h3>Hi ${name},</h3><p>Your job "<strong>${jobTitle}</strong>" is now live.</p>`
+    }),
 
-export const sendProposalAcceptedEmail = (email, freelancerName, jobTitle, clientName) =>
-    sendEmail(email, 'proposalAccepted', [freelancerName, jobTitle, clientName]);
-
-export default {
-    sendEmail,
-    sendWelcomeEmail,
-    sendProposalReceivedEmail,
-    sendProposalSubmittedEmail,
-    sendJobPostedEmail,
-    sendProposalAcceptedEmail
+    proposalAccepted: (freelancerName, jobTitle, clientName) => ({
+        subject: `Congrats! Proposal accepted for "${jobTitle}"! 🎊`,
+        html: `<h3>Hi ${freelancerName},</h3><p>${clientName} has accepted your proposal!</p>`
+    })
 };
+
+// --- Helper functions ---
+export const sendWelcomeEmail = (email, name, role) => sendEmail(email, 'welcome', [name, role]);
+export const sendProposalReceivedEmail = (email, clientName, freelancerName, jobTitle) => sendEmail(email, 'proposalReceived', [clientName, freelancerName, jobTitle]);
+export const sendProposalSubmittedEmail = (email, freelancerName, jobTitle) => sendEmail(email, 'proposalSubmitted', [freelancerName, jobTitle]);
+export const sendJobPostedEmail = (email, name, jobTitle) => sendEmail(email, 'jobPosted', [name, jobTitle]);
+export const sendProposalAcceptedEmail = (email, freelancerName, jobTitle, clientName) => sendEmail(email, 'proposalAccepted', [freelancerName, jobTitle, clientName]);
+
+export default { sendEmail, sendWelcomeEmail, sendProposalReceivedEmail, sendProposalSubmittedEmail, sendJobPostedEmail, sendProposalAcceptedEmail };
