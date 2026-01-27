@@ -30,16 +30,22 @@ function Navbar() {
 
     const isActive = (path) => location.pathname === path
 
+    const handleLogoClick = (e) => {
+        if (location.pathname === '/') {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
     return (
         <nav className="navbar">
             <div className="navbar-container">
                 {/* Logo */}
-                <Link to="/about" className="navbar-logo">
+                <Link to="/" className="navbar-logo" onClick={handleLogoClick}>
                     <img src="/freequo-logo.png" alt="Freequo" className="logo-image" />
                     <span className="logo-text">Freequo</span>
                 </Link>
 
-                {/* Desktop Navigation */}
+                {/* Desktop Navigation (Left Side) - Home and Jobs */}
                 <div className="navbar-links hide-mobile">
                     <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
                         Home
@@ -54,72 +60,81 @@ function Navbar() {
                     )}
                 </div>
 
-                {/* Desktop Auth Actions */}
+                {/* Desktop Auth Actions (Right Side) - Dashboard, About, Profile */}
                 <div className="navbar-actions hide-mobile">
-                    {isAuthenticated ? (
-                        <div className="user-menu">
-                            <button
-                                className="user-menu-trigger"
-                                onClick={() => setDropdownOpen(!dropdownOpen)}
-                            >
-                                <div className="avatar avatar-sm">
-                                    {user.name?.charAt(0).toUpperCase()}
-                                </div>
-                                <span className="user-name">{user.name}</span>
-                                <ChevronDown size={16} className={`chevron ${dropdownOpen ? 'rotated' : ''}`} />
-                            </button>
+                    <Link to="/about" className={`nav-link ${isActive('/about') ? 'active' : ''}`}>
+                        About
+                    </Link>
 
-                            {dropdownOpen && (
-                                <>
-                                    <div className="dropdown-overlay" onClick={() => setDropdownOpen(false)} />
-                                    <div className="user-dropdown">
-                                        <div className="dropdown-header">
-                                            <div className="avatar">
-                                                {user.name?.charAt(0).toUpperCase()}
-                                            </div>
-                                            <div>
-                                                <div className="dropdown-name">{user.name}</div>
-                                                <div className="dropdown-role">{user.role}</div>
-                                            </div>
-                                        </div>
-                                        <div className="dropdown-divider" />
-                                        <Link
-                                            to={getDashboardLink()}
-                                            className="dropdown-item"
-                                            onClick={() => setDropdownOpen(false)}
-                                        >
-                                            <LayoutDashboard size={18} />
-                                            Dashboard
-                                        </Link>
-                                        {user.role === 'freelancer' && (
-                                            <Link
-                                                to="/freelancer/edit-profile"
-                                                className="dropdown-item"
-                                                onClick={() => setDropdownOpen(false)}
-                                            >
-                                                <User size={18} />
-                                                Edit Profile
-                                            </Link>
-                                        )}
-                                        {user.role === 'client' && (
-                                            <Link
-                                                to="/client/post-job"
-                                                className="dropdown-item"
-                                                onClick={() => setDropdownOpen(false)}
-                                            >
-                                                <Briefcase size={18} />
-                                                Post a Job
-                                            </Link>
-                                        )}
-                                        <div className="dropdown-divider" />
-                                        <button className="dropdown-item logout" onClick={handleLogout}>
-                                            <LogOut size={18} />
-                                            Logout
-                                        </button>
+                    {isAuthenticated ? (
+                        <>
+                            <Link to={getDashboardLink()} className={`nav-link ${isActive(getDashboardLink()) ? 'active' : ''}`}>
+                                Dashboard
+                            </Link>
+                            <div className="user-menu">
+                                <button
+                                    className="user-menu-trigger"
+                                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                                >
+                                    <div className="avatar avatar-sm">
+                                        {user.name?.charAt(0).toUpperCase()}
                                     </div>
-                                </>
-                            )}
-                        </div>
+                                    <span className="user-name">{user.name}</span>
+                                    <ChevronDown size={16} className={`chevron ${dropdownOpen ? 'rotated' : ''}`} />
+                                </button>
+
+                                {dropdownOpen && (
+                                    <>
+                                        <div className="dropdown-overlay" onClick={() => setDropdownOpen(false)} />
+                                        <div className="user-dropdown">
+                                            <div className="dropdown-header">
+                                                <div className="avatar">
+                                                    {user.name?.charAt(0).toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <div className="dropdown-name">{user.name}</div>
+                                                    <div className="dropdown-role">{user.role}</div>
+                                                </div>
+                                            </div>
+                                            <div className="dropdown-divider" />
+                                            <Link
+                                                to={getDashboardLink()}
+                                                className="dropdown-item"
+                                                onClick={() => setDropdownOpen(false)}
+                                            >
+                                                <LayoutDashboard size={18} />
+                                                Dashboard
+                                            </Link>
+                                            {user.role === 'freelancer' && (
+                                                <Link
+                                                    to="/freelancer/edit-profile"
+                                                    className="dropdown-item"
+                                                    onClick={() => setDropdownOpen(false)}
+                                                >
+                                                    <User size={18} />
+                                                    Edit Profile
+                                                </Link>
+                                            )}
+                                            {user.role === 'client' && (
+                                                <Link
+                                                    to="/client/post-job"
+                                                    className="dropdown-item"
+                                                    onClick={() => setDropdownOpen(false)}
+                                                >
+                                                    <Briefcase size={18} />
+                                                    Post a Job
+                                                </Link>
+                                            )}
+                                            <div className="dropdown-divider" />
+                                            <button className="dropdown-item logout" onClick={handleLogout}>
+                                                <LogOut size={18} />
+                                                Logout
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </>
                     ) : (
                         <>
                             <Link to="/login" className="btn btn-secondary btn-sm">
@@ -157,6 +172,13 @@ function Navbar() {
                         onClick={() => setMobileMenuOpen(false)}
                     >
                         Find Jobs
+                    </Link>
+                    <Link
+                        to="/about"
+                        className={`mobile-link ${isActive('/about') ? 'active' : ''}`}
+                        onClick={() => setMobileMenuOpen(false)}
+                    >
+                        About
                     </Link>
 
                     {isAuthenticated ? (

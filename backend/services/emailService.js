@@ -78,9 +78,12 @@ const emailTemplates = {
             </head>
             <body>
                 <div class="container">
-                    <div class="header">
-                        <img src="${LOGO_URL}" alt="Freequo" class="logo">
+                <div class="header">
+                    <div style="background: white; padding: 20px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                        <img src="${LOGO_URL}" alt="Freequo" style="height: 100px; width: auto; display: block; margin: 0 auto;">
+                        <p style="margin: 10px 0 0; color: #64748b; font-size: 13px; font-weight: 500;">Your trusted freelance partner</p>
                     </div>
+                </div>
                     <div class="content">
                         <div class="banner">
                             <h1 style="margin:0">Welcome to Freequo!</h1>
@@ -129,8 +132,11 @@ const emailTemplates = {
         <body>
             <div class="container">
                 <div class="header">
-                    <img src="${ICON_URL}" alt="Logo" class="logo-square">
-                    <h2 style="margin: 5px 0; color: #0f172a;">Application Confirmed!</h2>
+                    <div style="background: white; padding: 20px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                        <img src="${LOGO_URL}" alt="Freequo" style="height: 120px; width: auto; display: block; margin: 0 auto;">
+                        <p style="margin: 10px 0 0; color: #64748b; font-size: 14px; font-weight: 500;">Your trusted freelance partner</p>
+                    </div>
+                    <h2 style="margin: 20px 0 10px; color: #0f172a;">Application Confirmed!</h2>
                     <div class="status-badge">✓ Successfully Applied</div>
                 </div>
                 <div class="content">
