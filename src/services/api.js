@@ -73,9 +73,11 @@ api.interceptors.response.use(
 export const authAPI = {
     register: (userData) => api.post('/auth/register', userData),
     login: (credentials) => api.post('/auth/login', credentials),
+    googleLogin: (credentials) => api.post('/auth/google', credentials),
     getMe: () => api.get('/auth/me'),
     updatePassword: (passwords) => api.put('/auth/password', passwords),
-    logout: () => api.post('/auth/logout')
+    logout: () => api.post('/auth/logout'),
+    adminLogin: (credentials) => api.post('/auth/admin-login', credentials)
 };
 
 // ========================================
@@ -128,10 +130,12 @@ export const proposalsAPI = {
     getProposalsForJob: (jobId, params = {}) =>
         api.get(`/proposals/job/${jobId}`, { params }),
     getMyProposals: (params = {}) => api.get('/proposals/my-proposals', { params }),
+    getMyProposalsCount: () => api.get('/proposals/my/count'),
     updateStatus: (id, status) => api.put(`/proposals/${id}/status`, { status }),
     withdrawProposal: (id) => api.delete(`/proposals/${id}`),
     checkIfApplied: (jobId) => api.get(`/proposals/check/${jobId}`)
 };
+
 
 // ========================================
 // DASHBOARD API

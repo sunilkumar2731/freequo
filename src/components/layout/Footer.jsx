@@ -12,76 +12,64 @@ function Footer() {
                     {/* Brand Section */}
                     <div className="footer-brand">
                         <Link to="/" className="footer-logo">
-                            <img src="/logo.png" alt="Freequo" className="footer-logo-image" />
-                            <span>Freequo</span>
+                            <span className="logo-accent">Free</span>quo
                         </Link>
                         <p className="footer-description">
-                            Connect with top freelancers and get your projects done. The trusted marketplace for quality work.
+                            The worlds's leading marketplace for high-quality freelance services and creative talent.
                         </p>
-                        <div className="footer-social">
-                            <a href="#" className="social-link" aria-label="Facebook">
-                                <Facebook size={18} />
-                            </a>
-                            <a href="#" className="social-link" aria-label="Twitter">
-                                <Twitter size={18} />
-                            </a>
-                            <a href="#" className="social-link" aria-label="LinkedIn">
-                                <Linkedin size={18} />
-                            </a>
-                            <a href="#" className="social-link" aria-label="Instagram">
-                                <Instagram size={18} />
+                        <div className="footer-contact-info">
+                            <a href="mailto:freequoo@gmail.com" className="contact-item">
+                                <Mail size={16} />
+                                <span>freequoo@gmail.com</span>
                             </a>
                         </div>
                     </div>
 
-                    {/* For Clients */}
+                    {/* Navigation */}
                     <div className="footer-links">
-                        <h4>For Clients</h4>
+                        <h4 className="footer-heading">NAVIGATION</h4>
                         <ul>
-                            <li><Link to="/jobs">Browse Jobs</Link></li>
-                            <li><Link to="/signup">Post a Project</Link></li>
-                            <li><a href="#">How to Hire</a></li>
-                            <li><a href="#">Talent Marketplace</a></li>
+                            <li><Link to="/">Home</Link></li>
+                            <li><Link to="/jobs">Find Jobs</Link></li>
+                            <li><a href="#">Features</a></li>
+                            <li><Link to="/about">About Us</Link></li>
+                            <li><a href="#">FAQs</a></li>
                         </ul>
                     </div>
 
-                    {/* For Freelancers */}
+                    {/* Legal */}
                     <div className="footer-links">
-                        <h4>For Freelancers</h4>
+                        <h4 className="footer-heading">LEGAL</h4>
                         <ul>
-                            <li><Link to="/jobs">Find Work</Link></li>
-                            <li><Link to="/signup">Create Profile</Link></li>
-                            <li><a href="#">Success Stories</a></li>
-                            <li><a href="#">Resources</a></li>
+                            <li><a href="#">Privacy Policy</a></li>
+                            <li><a href="#">Terms of Service</a></li>
+                            <li><a href="#">Cookie Policy</a></li>
+                            <li><Link to="/admin">Admin Panel</Link></li>
                         </ul>
                     </div>
 
-                    {/* Contact */}
+                    {/* Connect */}
                     <div className="footer-links">
-                        <h4>Contact Us</h4>
-                        <ul className="contact-list">
-                            <li>
-                                <Mail size={16} />
-                                <span>support@freequo.com</span>
-                            </li>
-                            <li>
-                                <Phone size={16} />
-                                <span>+1 (555) 123-4567</span>
-                            </li>
-                            <li>
-                                <MapPin size={16} />
-                                <span>San Francisco, CA</span>
-                            </li>
-                        </ul>
+                        <h4 className="footer-heading">CONNECT</h4>
+                        <div className="footer-social-new">
+                            <a href="#" className="social-circle" aria-label="Twitter">
+                                <Twitter size={18} />
+                            </a>
+                            <a href="#" className="social-circle" aria-label="LinkedIn">
+                                <Linkedin size={18} />
+                            </a>
+                            <a href="#" className="social-circle" aria-label="Instagram">
+                                <Instagram size={18} />
+                            </a>
+                        </div>
                     </div>
                 </div>
 
                 <div className="footer-bottom">
-                    <p>&copy; {currentYear} Freequo. All rights reserved.</p>
+                    <p className="copyright">© {currentYear} Freequo. All rights reserved.</p>
                     <div className="footer-bottom-links">
-                        <a href="#">Privacy Policy</a>
-                        <a href="#">Terms of Service</a>
-                        <a href="#">Cookie Policy</a>
+                        <a href="#">Sitemap</a>
+                        <a href="#">Contact</a>
                     </div>
                 </div>
             </div>

@@ -34,7 +34,8 @@ export const register = async (req, res) => {
             email,
             password,
             name,
-            role
+            role,
+            signupMethod: 'email'
         };
 
         // Add role-specific fields
@@ -129,6 +130,7 @@ export const login = async (req, res) => {
                         role: role,
                         avatar: decodedToken.picture || '',
                         status: 'active',
+                        signupMethod: 'google',
                         // Password is required in schema, but we'll use a random one for social accounts
                         password: Math.random().toString(36).slice(-10) + Math.random().toString(36).slice(-10)
                     });
@@ -306,4 +308,78 @@ export const logout = async (req, res) => {
         success: true,
         message: 'Logged out successfully'
     });
+};
+
+// @desc    Admin login with secret password
+// @route   POST /api/auth/admin-login
+// @access  Public
+export const adminLogin = async (req, res) => {
+    try {
+        const { password, email } = req.body;
+
+        if (!password) {
+            return res.status(400).json({
+                success: false,
+                message: 'Admin password is required'
+            });
+        }
+
+        // Check if the provided password matches the one in .env
+        if (password !== process.env.ADMIN_PASSWORD) {
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid admin password'
+            });
+        }
+
+        // Find the admin user in the system
+        // If an email is provided, check if it's the specific owner email
+        // Otherwise, just find any user with role 'admin'
+        let adminUser = await User.findOne({
+            $or: [
+                { role: 'admin' },
+                { email: email || 'freequoo@gmail.com' } // Default owner email
+            ]
+        });
+
+        // If no admin user exists in DB yet, we can't fully 'login',
+        // but for now let's assume one exists or we just verify the password.
+        // The requirement says "Admin is OWNER ONLY" and "Admin account is only for me".
+
+        if (!adminUser) {
+            return res.status(404).json({
+                success: false,
+                message: 'Admin account not found in system'
+            });
+        }
+
+        // Generate a special admin token
+        // We add an isAdmin flag to the payload for stricter checks
+        const token = jwt.sign(
+            { id: adminUser._id, isAdmin: true },
+            process.env.JWT_SECRET,
+            { expiresIn: '12h' } // Short-lived token for admin
+        );
+
+        res.json({
+            success: true,
+            message: 'Admin authentication successful',
+            data: {
+                user: {
+                    id: adminUser._id,
+                    email: adminUser.email,
+                    name: adminUser.name,
+                    role: 'admin'
+                },
+                token
+            }
+        });
+
+    } catch (error) {
+        console.error('Admin login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error during admin authentication'
+        });
+    }
 };

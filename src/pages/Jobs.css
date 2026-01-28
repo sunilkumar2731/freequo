@@ -1,5 +1,5 @@
 .jobs-page {
-    background: var(--gray-50);
+    background: var(--bg-primary);
     min-height: 100vh;
 }
 
@@ -16,7 +16,7 @@
 }
 
 .jobs-header-content p {
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     font-size: 1.0625rem;
 }
 
@@ -39,8 +39,8 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.5rem 0.5rem 0.5rem 1rem;
-    background: white;
-    border: 2px solid var(--gray-200);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
     transition: all var(--transition-fast);
 }
@@ -69,12 +69,12 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.25rem;
-    background: white;
-    border: 2px solid var(--gray-200);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     font-size: 0.9375rem;
     font-weight: 500;
-    color: var(--gray-700);
+    color: var(--text-secondary);
     transition: all var(--transition-fast);
     position: relative;
 }
@@ -103,11 +103,12 @@
 
 /* Filters Panel */
 .filters-panel {
-    background: white;
+    background: var(--bg-secondary);
     padding: 1.5rem;
     border-radius: var(--radius-xl);
     margin-bottom: 1.5rem;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
     animation: fadeInUp 0.2s ease;
 }
 
@@ -127,7 +128,7 @@
     display: block;
     font-size: 0.8125rem;
     font-weight: 600;
-    color: var(--gray-600);
+    color: var(--text-secondary);
     margin-bottom: 0.5rem;
 }
 
@@ -155,7 +156,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1rem;
-    background: var(--gray-100);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     font-size: 0.875rem;
     font-weight: 500;
@@ -190,10 +192,10 @@
 }
 
 .job-card {
-    background: white;
+    background: var(--bg-secondary);
     padding: 1.5rem;
     border-radius: var(--radius-xl);
-    border: 1px solid var(--gray-100);
+    border: 1px solid var(--border-color);
     transition: all var(--transition-normal);
     display: block;
 }
@@ -220,8 +222,8 @@
 
 .job-title {
     font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--gray-900);
+    font-weight: 700;
+    color: var(--text-primary);
     margin-bottom: 0.25rem;
     transition: color var(--transition-fast);
 }
@@ -232,7 +234,7 @@
 
 .job-company {
     font-size: 0.9375rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
 }
 
 .job-budget {
@@ -260,7 +262,7 @@
 
 .job-description {
     font-size: 0.9375rem;
-    color: var(--gray-600);
+    color: var(--text-tertiary);
     line-height: 1.6;
     margin-bottom: 1rem;
 }
@@ -274,17 +276,18 @@
 
 .skill-tag {
     padding: 0.375rem 0.75rem;
-    background: var(--primary-50);
-    color: var(--primary-700);
+    background: var(--bg-tertiary);
+    color: var(--primary-500);
     font-size: 0.8125rem;
     font-weight: 500;
     border-radius: var(--radius-full);
+    border: 1px solid var(--border-color);
 }
 
 .skill-more {
     padding: 0.375rem 0.75rem;
-    background: var(--gray-100);
-    color: var(--gray-600);
+    background: var(--bg-tertiary);
+    color: var(--text-tertiary);
     font-size: 0.8125rem;
     font-weight: 500;
     border-radius: var(--radius-full);
@@ -295,7 +298,7 @@
     flex-wrap: wrap;
     gap: 1.25rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--gray-100);
+    border-top: 1px solid var(--border-color);
 }
 
 .meta-item {
@@ -303,7 +306,7 @@
     align-items: center;
     gap: 0.375rem;
     font-size: 0.8125rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
 }
 
 .meta-item svg {
@@ -317,7 +320,7 @@
 .job-applicants {
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--gray-100);
+    border-top: 1px solid var(--border-color);
 }
 
 .job-applicants span {
@@ -328,7 +331,7 @@
 
 /* Empty State */
 .jobs-page .empty-state {
-    background: white;
+    background: var(--bg-secondary);
     border-radius: var(--radius-xl);
     padding: 4rem 2rem;
     text-align: center;

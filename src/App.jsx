@@ -1,10 +1,13 @@
+import { createContext, useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { DataProvider } from './context/DataContext'
+import { ThemeProvider } from './context/ThemeContext'
 
 // Layout
 import Navbar from './components/layout/Navbar'
 import Footer from './components/layout/Footer'
+import AdminLoginModal from './components/modals/AdminLoginModal'
 
 // Pages
 import Home from './pages/Home'
@@ -19,7 +22,9 @@ import AdminPanel from './pages/AdminPanel'
 import PostJob from './pages/PostJob'
 import EditProfile from './pages/EditProfile'
 import About from './pages/About'
+import MyApplications from './pages/MyApplications'
 import ProjectProgress from './pages/ProjectProgress'
+
 import PhoneAuthTest from './pages/PhoneAuthTest'
 
 // Protected Route Component
@@ -35,6 +40,45 @@ function ProtectedRoute({ children, allowedRoles }) {
   }
 
   return children
+}
+
+// Special Admin Route with Password Protection
+function AdminRoute({ children }) {
+  const { isAdminAuthenticated, adminLogin } = useAuth()
+  const [showModal, setShowModal] = useState(true)
+
+  if (isAdminAuthenticated) {
+    return children
+  }
+
+  return (
+    <>
+      <AdminLoginModal
+        isOpen={showModal}
+        onClose={(success) => {
+          if (success === true) {
+            setShowModal(false)
+          } else {
+            setShowModal(false)
+            window.location.href = '/'
+          }
+        }}
+        onLogin={adminLogin}
+      />
+      <div style={{
+        height: '70vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1rem',
+        color: 'var(--gray-500)'
+      }}>
+        <div className="loader"></div>
+        <p>This is a restricted area. Authentication required.</p>
+      </div>
+    </>
+  )
 }
 
 function AppContent() {
@@ -74,6 +118,12 @@ function AppContent() {
               <EditProfile />
             </ProtectedRoute>
           } />
+          <Route path="/freelancer/my-applications" element={
+            <ProtectedRoute allowedRoles={['freelancer']}>
+              <MyApplications />
+            </ProtectedRoute>
+          } />
+
           <Route path="/project/:id" element={
             <ProtectedRoute allowedRoles={['freelancer', 'client']}>
               <ProjectProgress />
@@ -81,9 +131,9 @@ function AppContent() {
           } />
 
           <Route path="/admin" element={
-            <ProtectedRoute allowedRoles={['admin']}>
+            <AdminRoute>
               <AdminPanel />
-            </ProtectedRoute>
+            </AdminRoute>
           } />
 
           {/* Fallback */}
@@ -97,11 +147,13 @@ function AppContent() {
 
 function App() {
   return (
-    <AuthProvider>
-      <DataProvider>
-        <AppContent />
-      </DataProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <DataProvider>
+          <AppContent />
+        </DataProvider>
+      </AuthProvider>
+    </ThemeProvider>
   )
 }
 

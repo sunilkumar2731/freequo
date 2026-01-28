@@ -19,7 +19,7 @@ import './Auth.css';
 function Login() {
     const navigate = useNavigate();
     const location = useLocation();
-    const { login, loginWithGoogle, isAuthenticated, user } = useAuth();
+    const { login, loginWithGoogle, isAuthenticated, user, adminLogout } = useAuth();
 
     const [formData, setFormData] = useState({
         email: '',
@@ -73,16 +73,20 @@ function Login() {
     };
 
     const handleDemoLogin = async (role) => {
+        if (role === 'admin') {
+            // Force a fresh password prompt when clicking Admin from Login page
+            adminLogout();
+            navigate('/admin');
+            return;
+        }
+
         setLoading(true);
         setError('');
 
         let demoEmail = '';
         let demoPassword = 'demo123';
 
-        if (role === 'admin') {
-            demoEmail = 'admin@freequo.com';
-            demoPassword = 'admin123';
-        } else if (role === 'client') {
+        if (role === 'client') {
             demoEmail = 'john@company.com';
         } else if (role === 'freelancer') {
             demoEmail = 'sarah@gmail.com';
@@ -237,7 +241,7 @@ function Login() {
 
                             <div className="social-auth-buttons">
                                 <button type="button" className="social-btn google" onClick={handleGoogleLogin}>
-                                    <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '20px' }} />
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/smartlock/icon_google.svg" alt="Google" />
                                     <span>Continue with Google</span>
                                 </button>
                             </div>
@@ -267,7 +271,7 @@ function Login() {
                     </div>
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
 

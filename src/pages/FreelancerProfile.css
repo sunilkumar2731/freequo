@@ -1,7 +1,8 @@
 .profile-page {
-    background: var(--gray-50);
+    background: var(--bg-primary);
     min-height: 100vh;
     padding-bottom: 3rem;
+    padding-top: 72px;
 }
 
 .back-link {
@@ -42,10 +43,11 @@
 
 /* Header Card */
 .profile-header-card {
-    background: white;
+    background: var(--bg-secondary);
     padding: 2rem;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
 }
 
 .profile-header-content {
@@ -85,7 +87,7 @@
 
 .profile-title {
     font-size: 1.0625rem;
-    color: var(--gray-600);
+    color: var(--text-secondary);
     margin-bottom: 1rem;
 }
 
@@ -145,10 +147,11 @@
 
 /* Sections */
 .profile-section {
-    background: white;
+    background: var(--bg-secondary);
     padding: 2rem;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
 }
 
 .profile-section h2 {
@@ -254,10 +257,11 @@
 }
 
 .sidebar-card {
-    background: white;
+    background: var(--bg-secondary);
     padding: 1.5rem;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
 }
 
 .rate-display {
@@ -323,7 +327,8 @@
 .profile-stat {
     text-align: center;
     padding: 1rem;
-    background: var(--gray-50);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
 }
 

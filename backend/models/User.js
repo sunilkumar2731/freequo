@@ -104,6 +104,11 @@ const userSchema = new mongoose.Schema({
     totalSpent: {
         type: Number,
         default: 0
+    },
+    signupMethod: {
+        type: String,
+        enum: ['email', 'google'],
+        default: 'email'
     }
 }, {
     timestamps: true

@@ -1,5 +1,5 @@
 .admin-page {
-    background: var(--gray-50);
+    background: var(--bg-primary);
     min-height: 100vh;
     padding-bottom: 3rem;
 }
@@ -35,7 +35,7 @@
 }
 
 .admin-title p {
-    color: var(--gray-500);
+    color: var(--text-tertiary);
 }
 
 .admin-actions {
@@ -68,9 +68,10 @@
     align-items: center;
     gap: 1rem;
     padding: 1.25rem 1.5rem;
-    background: white;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow);
+    box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
 }
@@ -137,12 +138,12 @@
     display: block;
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 .admin-stat-card .stat-label {
     font-size: 0.8125rem;
-    color: var(--gray-500);
+    color: var(--text-secondary);
 }
 
 .admin-stat-card .stat-trend {
@@ -176,7 +177,8 @@
     flex-direction: column;
     align-items: center;
     padding: 1rem 1.5rem;
-    background: white;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
     min-width: 120px;
@@ -190,7 +192,7 @@
 .quick-stat-value {
     font-size: 1.25rem;
     font-weight: 700;
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 .quick-stat.alert .quick-stat-value {
@@ -207,10 +209,11 @@
     display: flex;
     gap: 0.5rem;
     margin-bottom: 1.5rem;
-    background: white;
+    background: var(--bg-secondary);
     padding: 0.375rem;
     border-radius: var(--radius-lg);
     width: fit-content;
+    border: 1px solid var(--border-color);
     box-shadow: var(--shadow-sm);
 }
 
@@ -257,8 +260,8 @@
     align-items: center;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
-    background: white;
-    border: 1px solid var(--gray-200);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
 }
 
@@ -299,10 +302,11 @@
 }
 
 .admin-section {
-    background: white;
+    background: var(--bg-secondary);
     border-radius: var(--radius-xl);
     padding: 1.5rem;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
 }
 
 .admin-section.full-width {
@@ -541,9 +545,10 @@
 
 .admin-table-container {
     overflow-x: auto;
-    background: white;
+    background: var(--bg-secondary);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
 }
 
 .admin-table {
@@ -558,22 +563,23 @@
 }
 
 .admin-table th {
-    background: var(--gray-50);
+    background: var(--bg-tertiary);
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
     text-transform: uppercase;
     letter-spacing: 0.05em;
     white-space: nowrap;
 }
 
 .admin-table td {
-    border-top: 1px solid var(--gray-100);
+    border-top: 1px solid var(--border-color);
     font-size: 0.9375rem;
+    color: var(--text-primary);
 }
 
 .admin-table tr:hover td {
-    background: var(--gray-50);
+    background: var(--bg-tertiary);
 }
 
 /* User Cell */
@@ -598,12 +604,12 @@
 
 .user-name {
     font-weight: 600;
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 .user-email {
     font-size: 0.8125rem;
-    color: var(--gray-500);
+    color: var(--text-tertiary);
 }
 
 /* Badges */
@@ -742,4 +748,113 @@
 .empty-table svg {
     color: var(--gray-300);
     margin-bottom: 1rem;
+}
+
+/* New Admin Features */
+.admin-loading-state {
+    height: 60vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    color: var(--gray-500);
+}
+
+.admin-badge {
+    background: #ef4444;
+    /* Standard error red */
+    color: white;
+    font-size: 0.625rem;
+    font-weight: 800;
+    padding: 0.2rem 0.6rem;
+    border-radius: var(--radius-full);
+    margin-right: 0.5rem;
+    letter-spacing: 0.05em;
+    display: inline-block;
+}
+
+.stat-sub {
+    position: absolute;
+    bottom: 0.75rem;
+    right: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    font-weight: 500;
+}
+
+.signup-method {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--gray-600);
+}
+
+.google-icon {
+    color: #4285f4;
+}
+
+.security-notice-box {
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.1);
+    padding: 1.25rem;
+    border-radius: var(--radius-lg);
+}
+
+.security-notice-box p {
+    font-size: 0.875rem;
+    color: #b91c1c;
+    /* dark red */
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.last-sync {
+    font-size: 0.75rem;
+    color: var(--gray-400);
+    font-style: italic;
+}
+
+.recent-activity-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9375rem;
+    color: var(--gray-700);
+}
+
+.activity-stat-row .count {
+    font-weight: 700;
+    color: var(--primary-600);
+    background: var(--primary-50);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-md);
+}
+
+.proposal-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.proposal-details .budget {
+    font-weight: 700;
+    color: #15803d;
+    /* green */
+}
+
+.proposal-details .duration {
+    font-size: 0.75rem;
+    color: var(--gray-500);
+}
+
+.admin-loading-state svg {
+    color: var(--primary-500);
 }

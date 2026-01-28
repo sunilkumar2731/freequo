@@ -1,10 +1,12 @@
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
+import { dashboardAPI } from '../services/api'
 import {
     Briefcase, Star, DollarSign, Send, User, Eye, Clock, MapPin,
     CheckCircle, TrendingUp, Bell, FileText, MessageSquare, ArrowRight,
-    Target, Zap, Calendar, BarChart3
+    Target, Zap, Calendar, BarChart3, Loader2
 } from 'lucide-react'
 import './Dashboard.css'
 
@@ -27,20 +29,45 @@ const notifications = [
 
 function FreelancerDashboard() {
     const { user } = useAuth()
-    const { getAppliedJobs, getOpenJobs, loading } = useData()
+    const { getAppliedJobs, loading: dataLoading } = useData()
+    const [stats, setStats] = useState(null)
+    const [loadingStats, setLoadingStats] = useState(true)
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setLoadingStats(true)
+                const response = await dashboardAPI.getFreelancerDashboard()
+                setStats(response.data?.stats || response.stats)
+            } catch (error) {
+                console.error('Error fetching freelancer stats:', error)
+            } finally {
+                setLoadingStats(false)
+            }
+        }
+
+        if (user) {
+            fetchStats()
+        }
+    }, [user])
 
     // Safety checks
     const appliedJobs = getAppliedJobs ? getAppliedJobs(user?.id) || [] : []
+
+    const totalProposals = stats?.totalProposals || 0
+    const activeProjectsCount = stats?.activeProjects || 0
+    const totalEarnings = stats?.totalEarnings || 0
+    const thisMonthEarnings = stats?.acceptedProposals * 100 || 0 // Mocking/Estimating monthly or using a real field if available
+    const pendingEarnings = stats?.pendingEarnings || 0
+    const profileViewsCount = stats?.profileViews || 0
 
     const profileFields = [user?.name, user?.email, user?.title, user?.bio, user?.skills?.length > 0, user?.location, user?.hourlyRate]
     const completedFields = profileFields.filter(Boolean).length
     const profileCompletion = Math.round((completedFields / profileFields.length) * 100)
     const profileComplete = profileCompletion >= 80
 
-    const totalEarnings = user?.totalEarnings || 12500
-    const thisMonthEarnings = user?.monthEarnings || 3200
-    const pendingPayout = user?.pendingPayout || 850
-    const appliedCount = appliedJobs.length
+    const pendingPayout = pendingEarnings || user?.pendingPayout || 0
+    const appliedCount = totalProposals || appliedJobs.length
 
     const formatBudget = (job) => job.budgetType === 'hourly' ? `$${job.budget}/hr` : `$${job.budget.toLocaleString()}`
     const getDaysUntil = (dateString) => Math.ceil((new Date(dateString) - new Date()) / (1000 * 60 * 60 * 24))
@@ -50,7 +77,7 @@ function FreelancerDashboard() {
     }
 
     // Show loading state
-    if (loading) {
+    if (dataLoading || loadingStats) {
         return (
             <div className="dashboard-page page">
                 <div className="container">
@@ -94,10 +121,34 @@ function FreelancerDashboard() {
                 )}
 
                 <div className="stats-grid">
-                    <div className="stat-card"><div className="stat-icon blue"><Briefcase size={24} /></div><div className="stat-content"><span className="stat-value">{activeProjects.length}</span><span className="stat-label">Active Projects</span></div></div>
-                    <div className="stat-card"><div className="stat-icon purple"><Send size={24} /></div><div className="stat-content"><span className="stat-value">{appliedCount}</span><span className="stat-label">Proposals Sent</span></div></div>
-                    <div className="stat-card"><div className="stat-icon green"><DollarSign size={24} /></div><div className="stat-content"><span className="stat-value">${totalEarnings.toLocaleString()}</span><span className="stat-label">Total Earnings</span></div></div>
-                    <div className="stat-card"><div className="stat-icon orange"><Eye size={24} /></div><div className="stat-content"><span className="stat-value">{user?.profileViews || 156}</span><span className="stat-label">Profile Views</span></div></div>
+                    <div className="stat-card">
+                        <div className="stat-icon blue"><Briefcase size={24} /></div>
+                        <div className="stat-content">
+                            <span className="stat-value">{activeProjectsCount}</span>
+                            <span className="stat-label">Active Projects</span>
+                        </div>
+                    </div>
+                    <Link to="/freelancer/my-applications" className="stat-card" style={{ textDecoration: 'none' }}>
+                        <div className="stat-icon purple"><Send size={24} /></div>
+                        <div className="stat-content">
+                            <span className="stat-value">{totalProposals}</span>
+                            <span className="stat-label">Applied Jobs</span>
+                        </div>
+                    </Link>
+                    <div className="stat-card">
+                        <div className="stat-icon green"><DollarSign size={24} /></div>
+                        <div className="stat-content">
+                            <span className="stat-value">${totalEarnings.toLocaleString()}</span>
+                            <span className="stat-label">Total Earnings</span>
+                        </div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-icon orange"><Eye size={24} /></div>
+                        <div className="stat-content">
+                            <span className="stat-value">{profileViewsCount}</span>
+                            <span className="stat-label">Profile Views</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="dashboard-main-grid">
@@ -147,7 +198,6 @@ function FreelancerDashboard() {
                             <div className="section-header"><h3><DollarSign size={18} /> Earnings</h3></div>
                             <div className="earnings-stats">
                                 <div className="earning-item"><span className="earning-label">Total</span><span className="earning-value total">${totalEarnings.toLocaleString()}</span></div>
-                                <div className="earning-item"><span className="earning-label">This Month</span><span className="earning-value month">${thisMonthEarnings.toLocaleString()}</span></div>
                                 <div className="earning-item"><span className="earning-label">Pending</span><span className="earning-value pending">${pendingPayout.toLocaleString()}</span></div>
                             </div>
                         </div>

@@ -367,3 +367,29 @@ export const checkIfApplied = async (req, res) => {
         });
     }
 };
+
+// @desc    Get count of freelancer's proposals
+// @route   GET /api/proposals/my/count
+// @access  Private (Freelancer)
+export const getMyProposalsCount = async (req, res) => {
+    try {
+        const count = await Proposal.countDocuments({ freelancer: req.user._id });
+
+        res.json({
+            success: true,
+            data: {
+                appliedCount: count
+            }
+        });
+
+    } catch (error) {
+        console.error('Get my proposals count error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching proposal count'
+        });
+    }
+};
+
+
+

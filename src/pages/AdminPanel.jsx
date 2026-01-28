@@ -1,223 +1,373 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useData } from '../context/DataContext'
+import { dashboardAPI, adminAPI } from '../services/api'
 import {
     Users, Briefcase, Shield, Eye, UserCheck, UserX, Trash2, Search, Filter,
     DollarSign, TrendingUp, Activity, AlertTriangle, CheckCircle, Clock,
-    BarChart3, FileText, Bell, ArrowRight, Settings
+    BarChart3, FileText, Bell, ArrowRight, Settings, Globe, Mail, Loader2,
+    Calendar, ExternalLink, ShieldAlert
 } from 'lucide-react'
 import './AdminPanel.css'
 
-const platformStats = {
-    revenue: 125000,
-    monthlyGrowth: 12.5,
-    pendingVerifications: 8,
-    reportedJobs: 3
-}
-
-const recentTransactions = [
-    { id: 1, type: 'Platform Fee', amount: 250, date: '2024-01-14', status: 'completed' },
-    { id: 2, type: 'Freelancer Payout', amount: 2500, date: '2024-01-13', status: 'completed' },
-    { id: 3, type: 'Subscription', amount: 99, date: '2024-01-12', status: 'pending' }
-]
-
-const notifications = [
-    { id: 1, message: 'New freelancer verification request', time: '5 min ago', type: 'verification' },
-    { id: 2, message: 'Job reported for review', time: '1 hour ago', type: 'report' },
-    { id: 3, message: 'Payment dispute opened', time: '2 hours ago', type: 'dispute' }
-]
-
 function AdminPanel() {
-    const { user, getAllUsers, updateUserStatus, removeUser } = useAuth()
-    const { jobs, deleteJob } = useData()
-
+    const { isAdminAuthenticated, adminLogout } = useAuth()
     const [activeTab, setActiveTab] = useState('overview')
     const [searchQuery, setSearchQuery] = useState('')
     const [roleFilter, setRoleFilter] = useState('')
+    const [loading, setLoading] = useState(true)
+    const [data, setData] = useState({
+        stats: {
+            totalUsers: 0,
+            totalClients: 0,
+            totalFreelancers: 0,
+            totalJobs: 0,
+            totalProposals: 0,
+            totalPayments: 0,
+            platformRevenue: 0,
+            activeUsers: 0,
+            suspendedUsers: 0
+        },
+        users: [],
+        proposals: []
+    })
 
-    const allUsers = getAllUsers()
-    const filteredUsers = allUsers.filter(u => {
-        const matchesSearch = !searchQuery || u.name.toLowerCase().includes(searchQuery.toLowerCase()) || u.email.toLowerCase().includes(searchQuery.toLowerCase())
+    const [lastUpdated, setLastUpdated] = useState(new Date())
+    const [isRefreshing, setIsRefreshing] = useState(false)
+
+    const fetchAdminData = async (silent = false) => {
+        if (!isAdminAuthenticated) return;
+
+        try {
+            if (!silent) setLoading(true)
+            else setIsRefreshing(true)
+
+            const response = await dashboardAPI.getAdminDashboard()
+            const result = response.data || response
+            setData({
+                stats: result.stats || {},
+                users: result.users || [],
+                proposals: result.proposals || []
+            })
+            setLastUpdated(new Date())
+        } catch (error) {
+            console.error('Error fetching admin data:', error)
+        } finally {
+            setLoading(false)
+            setIsRefreshing(false)
+        }
+    }
+
+    useEffect(() => {
+        fetchAdminData()
+
+        // Auto-refresh every 30 seconds to keep data live
+        const interval = setInterval(() => {
+            fetchAdminData(true)
+        }, 30000)
+
+        return () => clearInterval(interval)
+    }, [isAdminAuthenticated])
+
+    const formatDate = (dateString) => {
+        if (!dateString) return 'N/A'
+        return new Date(dateString).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        })
+    }
+
+    const filteredUsers = data.users.filter(u => {
+        const matchesSearch = !searchQuery ||
+            u.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            u.email?.toLowerCase().includes(searchQuery.toLowerCase())
         const matchesRole = !roleFilter || u.role === roleFilter
         return matchesSearch && matchesRole
     })
-    const filteredJobs = jobs.filter(job => !searchQuery || job.title.toLowerCase().includes(searchQuery.toLowerCase()))
 
-    const freelancerCount = allUsers.filter(u => u.role === 'freelancer').length
-    const clientCount = allUsers.filter(u => u.role === 'client').length
-    const openJobsCount = jobs.filter(j => j.status === 'open').length
-    const activeFreelancers = allUsers.filter(u => u.role === 'freelancer' && u.status !== 'suspended').length
+    const filteredProposals = data.proposals.filter(p => {
+        const matchesSearch = !searchQuery ||
+            p.job?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            p.freelancer?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+        return matchesSearch
+    })
 
-    const handleStatusToggle = (userId, currentStatus) => updateUserStatus(userId, currentStatus === 'active' ? 'suspended' : 'active')
-    const handleRemoveUser = (userId) => { if (window.confirm('Remove this user permanently?')) removeUser(userId) }
-    const handleDeleteJob = (jobId) => { if (window.confirm('Delete this job?')) deleteJob(jobId) }
-    const formatDate = (dateString) => new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    if (loading && activeTab === 'overview') {
+        return (
+            <div className="admin-loading-state">
+                <Loader2 className="animate-spin" size={48} />
+                <p>Loading real-time platform data...</p>
+            </div>
+        )
+    }
 
     return (
         <div className="admin-page page">
             <div className="container">
                 <div className="admin-header">
                     <div className="admin-title">
-                        <Shield size={28} className="admin-icon" />
+                        <div className="admin-badge">OWNER ONLY</div>
+                        <Shield size={32} className="admin-icon" />
                         <div>
-                            <h1>Admin Dashboard</h1>
-                            <p>Manage platform, users, and content</p>
+                            <h1>Platform Control Center</h1>
+                            <p>Real-time database monitoring and system administration</p>
                         </div>
                     </div>
                     <div className="admin-actions">
-                        <Link to="/admin/settings" className="btn btn-secondary"><Settings size={18} /> Settings</Link>
+                        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)' }}>
+                                {isRefreshing ? 'Syncing...' : `Last updated: ${lastUpdated.toLocaleTimeString()}`}
+                            </span>
+                            <div style={{ display: 'flex', gap: '0.75rem' }}>
+                                <button
+                                    onClick={() => fetchAdminData(true)}
+                                    className="btn btn-secondary"
+                                    disabled={isRefreshing}
+                                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
+                                >
+                                    <Clock size={16} className={isRefreshing ? 'animate-spin' : ''} />
+                                    Sync Live Data
+                                </button>
+                                <button onClick={adminLogout} className="btn btn-outline" style={{ borderColor: '#ef4444', color: '#ef4444' }}>
+                                    Logout Admin
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Platform Stats */}
+                {/* Real-time Platform Stats */}
                 <div className="admin-stats">
                     <div className="admin-stat-card primary">
                         <div className="stat-icon-wrap"><Users size={24} /></div>
-                        <div><span className="stat-value">{allUsers.length}</span><span className="stat-label">Total Users</span></div>
-                        <div className="stat-trend up"><TrendingUp size={14} /> +8%</div>
+                        <div>
+                            <span className="stat-value">{data.stats.totalUsers || 0}</span>
+                            <span className="stat-label">Total Users</span>
+                        </div>
+                        <div className="stat-sub">{data.stats.activeUsers || 0} active</div>
                     </div>
                     <div className="admin-stat-card success">
                         <div className="stat-icon-wrap"><Briefcase size={24} /></div>
-                        <div><span className="stat-value">{jobs.length}</span><span className="stat-label">Total Jobs</span></div>
+                        <div>
+                            <span className="stat-value">{data.stats.totalJobs || 0}</span>
+                            <span className="stat-label">Jobs Posted</span>
+                        </div>
+                        <div className="stat-sub">{data.stats.totalProposals || 0} applications</div>
                     </div>
                     <div className="admin-stat-card info">
-                        <div className="stat-icon-wrap"><Activity size={24} /></div>
-                        <div><span className="stat-value">{activeFreelancers}</span><span className="stat-label">Active Freelancers</span></div>
+                        <div className="stat-icon-wrap"><DollarSign size={24} /></div>
+                        <div>
+                            <span className="stat-value">${(data.stats.platformRevenue || 0).toLocaleString()}</span>
+                            <span className="stat-label">Net Revenue</span>
+                        </div>
+                        <div className="stat-sub">10% Platform Fee</div>
                     </div>
                     <div className="admin-stat-card warning">
-                        <div className="stat-icon-wrap"><DollarSign size={24} /></div>
-                        <div><span className="stat-value">${platformStats.revenue.toLocaleString()}</span><span className="stat-label">Platform Revenue</span></div>
+                        <div className="stat-icon-wrap"><TrendingUp size={24} /></div>
+                        <div>
+                            <span className="stat-value">${(data.stats.totalPayments || 0).toLocaleString()}</span>
+                            <span className="stat-label">GMV</span>
+                        </div>
+                        <div className="stat-sub">Total transaction vol</div>
                     </div>
                 </div>
 
-                {/* Quick Stats Row */}
+                {/* Quick Role Breakdown */}
                 <div className="admin-quick-stats">
-                    <div className="quick-stat"><span className="quick-stat-value">{freelancerCount}</span><span className="quick-stat-label">Freelancers</span></div>
-                    <div className="quick-stat"><span className="quick-stat-value">{clientCount}</span><span className="quick-stat-label">Clients</span></div>
-                    <div className="quick-stat"><span className="quick-stat-value">{openJobsCount}</span><span className="quick-stat-label">Open Jobs</span></div>
-                    <div className="quick-stat alert"><span className="quick-stat-value">{platformStats.pendingVerifications}</span><span className="quick-stat-label">Pending Verifications</span></div>
-                    <div className="quick-stat alert"><span className="quick-stat-value">{platformStats.reportedJobs}</span><span className="quick-stat-label">Reported Jobs</span></div>
+                    <div className="quick-stat">
+                        <span className="quick-stat-value">{data.stats.totalFreelancers || 0}</span>
+                        <span className="quick-stat-label">Freelancers</span>
+                    </div>
+                    <div className="quick-stat">
+                        <span className="quick-stat-value">{data.stats.totalClients || 0}</span>
+                        <span className="quick-stat-label">Clients</span>
+                    </div>
+                    <div className="quick-stat alert">
+                        <span className="quick-stat-value">{data.stats.suspendedUsers || 0}</span>
+                        <span className="quick-stat-label">Suspended</span>
+                    </div>
+                    <div className="quick-stat info">
+                        <span className="quick-stat-value">{data.stats.totalProposals || 0}</span>
+                        <span className="quick-stat-label">Proposals</span>
+                    </div>
                 </div>
 
                 {/* Tabs */}
                 <div className="admin-tabs">
-                    <button className={`admin-tab ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}><BarChart3 size={18} /> Overview</button>
-                    <button className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}><Users size={18} /> Users</button>
-                    <button className={`admin-tab ${activeTab === 'jobs' ? 'active' : ''}`} onClick={() => setActiveTab('jobs')}><Briefcase size={18} /> Jobs</button>
-                    <button className={`admin-tab ${activeTab === 'payments' ? 'active' : ''}`} onClick={() => setActiveTab('payments')}><DollarSign size={18} /> Payments</button>
+                    <button className={`admin-tab ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
+                        <BarChart3 size={18} /> Overview
+                    </button>
+                    <button className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`} onClick={() => setActiveTab('users')}>
+                        <Users size={18} /> User Tracking
+                    </button>
+                    <button className={`admin-tab ${activeTab === 'proposals' ? 'active' : ''}`} onClick={() => setActiveTab('proposals')}>
+                        <FileText size={18} /> Application Monitoring
+                    </button>
                 </div>
 
                 {activeTab === 'overview' && (
                     <div className="admin-overview-grid">
                         <div className="admin-section">
-                            <div className="section-header"><h3><AlertTriangle size={18} /> Pending Actions</h3></div>
-                            <div className="pending-actions">
-                                <div className="action-item"><div className="action-icon verify"><UserCheck size={20} /></div><div className="action-info"><h4>Verify Freelancers</h4><p>{platformStats.pendingVerifications} pending verifications</p></div><button className="btn btn-primary btn-sm">Review</button></div>
-                                <div className="action-item"><div className="action-icon report"><AlertTriangle size={20} /></div><div className="action-info"><h4>Review Reported Jobs</h4><p>{platformStats.reportedJobs} jobs flagged</p></div><button className="btn btn-secondary btn-sm">Review</button></div>
+                            <div className="section-header"><h3><Activity size={18} /> System Activity</h3></div>
+                            <div className="recent-activity-summary">
+                                <div className="activity-stat-row">
+                                    <span>Newly Joined (Last 24h)</span>
+                                    <span className="count">{data.users.filter(u => new Date(u.createdAt) > new Date(Date.now() - 86400000)).length}</span>
+                                </div>
+                                <div className="activity-stat-row">
+                                    <span>New Applications</span>
+                                    <span className="count">{data.proposals.filter(p => new Date(p.createdAt) > new Date(Date.now() - 86400000)).length}</span>
+                                </div>
                             </div>
                         </div>
                         <div className="admin-section">
-                            <div className="section-header"><h3><Bell size={18} /> Recent Activity</h3></div>
-                            <div className="activity-list">
-                                {notifications.map(n => (
-                                    <div key={n.id} className="activity-item">
-                                        <div className={`activity-dot ${n.type}`}></div>
-                                        <div className="activity-content"><p>{n.message}</p><span>{n.time}</span></div>
-                                    </div>
-                                ))}
+                            <div className="section-header"><h3><ShieldAlert size={18} /> Security Notice</h3></div>
+                            <div className="security-notice-box">
+                                <p>This panel reflects real-time production data from the database. All actions are logged under the platform owner ID.</p>
+                                <div className="last-sync">Last synced: {new Date().toLocaleTimeString()}</div>
                             </div>
                         </div>
-                        <div className="admin-section full-width">
-                            <div className="section-header"><h3><DollarSign size={18} /> Recent Transactions</h3><Link to="#" className="see-all-link">View All <ArrowRight size={14} /></Link></div>
-                            <div className="transactions-list">
-                                {recentTransactions.map(t => (
-                                    <div key={t.id} className="transaction-item">
-                                        <div className="transaction-type">{t.type}</div>
-                                        <div className="transaction-date">{formatDate(t.date)}</div>
-                                        <div className={`transaction-amount ${t.amount > 0 ? 'positive' : ''}`}>${t.amount}</div>
-                                        <span className={`status-badge ${t.status}`}>{t.status}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                {(activeTab === 'users' || activeTab === 'jobs') && (
-                    <div className="admin-toolbar">
-                        <div className="search-box"><Search size={18} /><input type="text" placeholder={`Search ${activeTab}...`} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /></div>
-                        {activeTab === 'users' && (
-                            <div className="filter-box"><Filter size={18} /><select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}><option value="">All Roles</option><option value="freelancer">Freelancers</option><option value="client">Clients</option></select></div>
-                        )}
                     </div>
                 )}
 
                 {activeTab === 'users' && (
-                    <div className="admin-table-container">
-                        <table className="admin-table">
-                            <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                {filteredUsers.map((u) => (
-                                    <tr key={u.id}>
-                                        <td><div className="user-cell"><div className="user-avatar">{u.name?.charAt(0)}</div><div><div className="user-name">{u.name}</div><div className="user-email">{u.email}</div></div></div></td>
-                                        <td><span className={`role-badge ${u.role}`}>{u.role}</span></td>
-                                        <td><span className={`status-badge ${u.status || 'active'}`}>{u.status || 'active'}</span></td>
-                                        <td className="date-cell">{formatDate(u.createdAt)}</td>
-                                        <td><div className="action-buttons">
-                                            {u.role === 'freelancer' && <Link to={`/freelancer/${u.id}`} className="action-btn view" title="View"><Eye size={16} /></Link>}
-                                            <button className={`action-btn ${u.status === 'suspended' ? 'activate' : 'suspend'}`} onClick={() => handleStatusToggle(u.id, u.status || 'active')} title={u.status === 'suspended' ? 'Activate' : 'Suspend'}>{u.status === 'suspended' ? <UserCheck size={16} /> : <UserX size={16} />}</button>
-                                            <button className="action-btn delete" onClick={() => handleRemoveUser(u.id)} title="Remove"><Trash2 size={16} /></button>
-                                        </div></td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {filteredUsers.length === 0 && <div className="empty-table"><Users size={36} /><p>No users found</p></div>}
-                    </div>
-                )}
-
-                {activeTab === 'jobs' && (
-                    <div className="admin-table-container">
-                        <table className="admin-table">
-                            <thead><tr><th>Job Title</th><th>Client</th><th>Category</th><th>Status</th><th>Posted</th><th>Actions</th></tr></thead>
-                            <tbody>
-                                {filteredJobs.map((job) => (
-                                    <tr key={job.id}>
-                                        <td><Link to={`/jobs/${job.id}`} className="job-link">{job.title}</Link></td>
-                                        <td>{job.clientName}</td>
-                                        <td><span className="category-badge">{job.category}</span></td>
-                                        <td><span className={`status-badge ${job.status}`}>{job.status}</span></td>
-                                        <td className="date-cell">{formatDate(job.createdAt)}</td>
-                                        <td><div className="action-buttons">
-                                            <Link to={`/jobs/${job.id}`} className="action-btn view" title="View"><Eye size={16} /></Link>
-                                            <button className="action-btn delete" onClick={() => handleDeleteJob(job.id)} title="Delete"><Trash2 size={16} /></button>
-                                        </div></td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                        {filteredJobs.length === 0 && <div className="empty-table"><Briefcase size={36} /><p>No jobs found</p></div>}
-                    </div>
-                )}
-
-                {activeTab === 'payments' && (
-                    <div className="admin-payments-grid">
-                        <div className="payment-stat-card"><h4>Total Revenue</h4><span className="payment-value">${platformStats.revenue.toLocaleString()}</span><span className="payment-trend up"><TrendingUp size={14} /> +{platformStats.monthlyGrowth}% this month</span></div>
-                        <div className="payment-stat-card"><h4>Platform Fees</h4><span className="payment-value">$18,750</span></div>
-                        <div className="payment-stat-card"><h4>Freelancer Payouts</h4><span className="payment-value">$106,250</span></div>
-                        <div className="admin-section full-width">
-                            <div className="section-header"><h3>Transaction History</h3></div>
-                            <div className="transactions-list">
-                                {recentTransactions.map(t => (
-                                    <div key={t.id} className="transaction-item">
-                                        <div className="transaction-type">{t.type}</div>
-                                        <div className="transaction-date">{formatDate(t.date)}</div>
-                                        <div className="transaction-amount">${t.amount}</div>
-                                        <span className={`status-badge ${t.status}`}>{t.status}</span>
-                                    </div>
-                                ))}
+                    <div className="admin-content-area">
+                        <div className="admin-toolbar">
+                            <div className="search-box">
+                                <Search size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Search by name or email..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
                             </div>
+                            <div className="filter-box">
+                                <Filter size={18} />
+                                <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
+                                    <option value="">All Roles</option>
+                                    <option value="freelancer">Freelancers Only</option>
+                                    <option value="client">Clients Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="admin-table-container">
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Name / Email</th>
+                                        <th>Role</th>
+                                        <th>Signup Method</th>
+                                        <th>Status</th>
+                                        <th>Joined On</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredUsers.map((u) => (
+                                        <tr key={u._id || u.id}>
+                                            <td>
+                                                <div className="user-cell">
+                                                    <div className="user-avatar">{u.name?.charAt(0).toUpperCase()}</div>
+                                                    <div>
+                                                        <div className="user-name">{u.name}</div>
+                                                        <div className="user-email">{u.email}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`role-badge ${u.role}`}>
+                                                    {u.role?.charAt(0).toUpperCase() + u.role?.slice(1)}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="signup-method">
+                                                    {u.signupMethod === 'google' ? (
+                                                        <><Globe size={14} className="google-icon" /> Google Auth</>
+                                                    ) : (
+                                                        <><Mail size={14} /> Email & Pass</>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`status-badge ${u.status || 'active'}`}>
+                                                    {u.status || 'Active'}
+                                                </span>
+                                            </td>
+                                            <td className="date-cell">{formatDate(u.createdAt)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {filteredUsers.length === 0 && (
+                                <div className="empty-table">
+                                    <Users size={48} />
+                                    <p>No users found in database</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {activeTab === 'proposals' && (
+                    <div className="admin-content-area">
+                        <div className="admin-toolbar">
+                            <div className="search-box">
+                                <Search size={18} />
+                                <input
+                                    type="text"
+                                    placeholder="Search by job or applicant..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <div className="admin-table-container">
+                            <table className="admin-table">
+                                <thead>
+                                    <tr>
+                                        <th>Job Title</th>
+                                        <th>Applicant</th>
+                                        <th>Budget / Duration</th>
+                                        <th>Status</th>
+                                        <th>Applied Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredProposals.map((p) => (
+                                        <tr key={p._id || p.id}>
+                                            <td className="job-title-cell">
+                                                <strong>{p.job?.title || 'Unknown Job'}</strong>
+                                            </td>
+                                            <td>
+                                                <div className="applicant-info">
+                                                    <span className="applicant-name">{p.freelancer?.name || 'N/A'}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="proposal-details">
+                                                    <div className="budget">${p.proposedBudget}</div>
+                                                    <div className="duration">{p.proposedDuration}</div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span className={`status-badge ${p.status}`}>
+                                                    {p.status}
+                                                </span>
+                                            </td>
+                                            <td className="date-cell">{formatDate(p.createdAt)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {filteredProposals.length === 0 && (
+                                <div className="empty-table">
+                                    <FileText size={48} />
+                                    <p>No job applications found in database</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

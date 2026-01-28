@@ -1,5 +1,5 @@
 .dashboard-page {
-    background: var(--gray-50);
+    background: var(--bg-primary);
     min-height: 100vh;
     padding-bottom: 3rem;
 }
@@ -98,7 +98,7 @@
 
 .completion-text h4 {
     font-size: 1rem;
-    color: var(--gray-900);
+    color: var(--text-primary);
     margin-bottom: 0.25rem;
 }
 
@@ -160,9 +160,10 @@
     align-items: center;
     gap: 1rem;
     padding: 1.5rem;
-    background: white;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow);
+    box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
 }
@@ -220,7 +221,7 @@
 .stat-value {
     font-size: 1.5rem;
     font-weight: 700;
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 .stat-label {
@@ -270,10 +271,11 @@
 
 /* Dashboard Section */
 .dashboard-section {
-    background: white;
+    background: var(--bg-secondary);
     border-radius: var(--radius-xl);
     padding: 1.5rem;
-    box-shadow: var(--shadow);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
 }
 
 .section-header {
@@ -290,7 +292,7 @@
     gap: 0.5rem;
     font-size: 1.125rem;
     font-weight: 600;
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 .section-header h2 svg,
@@ -326,9 +328,9 @@
 
 .job-card-dashboard {
     padding: 1.25rem;
-    background: var(--gray-50);
+    background: var(--bg-tertiary);
     border-radius: var(--radius-lg);
-    border: 1px solid var(--gray-100);
+    border: 1px solid var(--border-color);
     transition: all 0.2s;
 }
 
@@ -355,7 +357,7 @@
 }
 
 .job-card-title a {
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 .job-card-title a:hover {
@@ -443,8 +445,9 @@
     align-items: center;
     gap: 1rem;
     padding: 1rem;
-    background: var(--gray-50);
+    background: var(--bg-tertiary);
     border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
 }
 
 .proposal-freelancer {
@@ -469,7 +472,7 @@
 .freelancer-info h4 {
     font-size: 0.9375rem;
     font-weight: 600;
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 .freelancer-info p {
@@ -521,14 +524,15 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem;
-    background: var(--gray-50);
+    background: var(--bg-tertiary);
     border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color);
 }
 
 .payment-info h4 {
     font-size: 0.9375rem;
     font-weight: 600;
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 .payment-date {
@@ -544,7 +548,7 @@
 
 .payment-amount {
     font-weight: 700;
-    color: var(--gray-900);
+    color: var(--text-primary);
 }
 
 /* Quick Actions Card */
@@ -566,9 +570,10 @@
     align-items: center;
     gap: 0.5rem;
     padding: 1rem;
-    background: var(--gray-50);
+    background: var(--bg-tertiary);
     border-radius: var(--radius-lg);
-    color: var(--gray-700);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
     transition: all 0.2s;
 }
 
@@ -617,7 +622,7 @@
 }
 
 .notification-item:hover {
-    background: var(--gray-50);
+    background: var(--bg-tertiary);
 }
 
 .notification-item.unread {
@@ -643,7 +648,7 @@
 
 .notification-content p {
     font-size: 0.875rem;
-    color: var(--gray-700);
+    color: var(--text-secondary);
     margin-bottom: 0.25rem;
 }
 

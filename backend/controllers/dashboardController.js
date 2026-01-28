@@ -165,8 +165,8 @@ export const getAdminDashboard = async (req, res) => {
             totalProposals,
             totalPayments,
             platformRevenue,
-            recentUsers,
-            recentJobs
+            allUsers,
+            allProposals
         ] = await Promise.all([
             User.countDocuments({ role: { $ne: 'admin' } }),
             User.countDocuments({ role: 'client' }),
@@ -187,33 +187,13 @@ export const getAdminDashboard = async (req, res) => {
                 { $group: { _id: null, total: { $sum: '$platformFee' } } }
             ]),
             User.find({ role: { $ne: 'admin' } })
-                .select('name email role status createdAt')
+                .select('name email role signupMethod status createdAt')
+                .sort({ createdAt: -1 }),
+            Proposal.find()
+                .populate('job', 'title')
+                .populate('freelancer', 'name')
+                .select('job freelancer proposedBudget proposedDuration status createdAt')
                 .sort({ createdAt: -1 })
-                .limit(10),
-            Job.find()
-                .populate('client', 'name')
-                .select('title category status budget createdAt')
-                .sort({ createdAt: -1 })
-                .limit(10)
-        ]);
-
-        // Get monthly stats for chart
-        const sixMonthsAgo = new Date();
-        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-        const monthlyStats = await Job.aggregate([
-            { $match: { createdAt: { $gte: sixMonthsAgo } } },
-            {
-                $group: {
-                    _id: {
-                        year: { $year: '$createdAt' },
-                        month: { $month: '$createdAt' }
-                    },
-                    jobs: { $sum: 1 },
-                    totalBudget: { $sum: '$budget' }
-                }
-            },
-            { $sort: { '_id.year': 1, '_id.month': 1 } }
         ]);
 
         res.json({
@@ -233,9 +213,8 @@ export const getAdminDashboard = async (req, res) => {
                     totalPayments: totalPayments[0]?.total || 0,
                     platformRevenue: platformRevenue[0]?.total || 0
                 },
-                recentUsers,
-                recentJobs,
-                monthlyStats
+                users: allUsers,
+                proposals: allProposals
             }
         });
 

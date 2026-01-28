@@ -337,10 +337,32 @@ function JobDetails() {
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                        <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--gray-100)', display: 'flex', justifyContent: 'between', alignItems: 'center' }}>
-                            <h3 style={{ margin: 0 }}>Submit Proposal</h3>
-                            <button onClick={() => setShowModal(false)} style={{ color: 'var(--gray-400)' }}>
-                                <X size={24} />
+                        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <h3 style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 600 }}>Submit Proposal</h3>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                style={{
+                                    color: 'var(--gray-400)',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    padding: '5px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    borderRadius: '50%',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.currentTarget.style.color = 'var(--text-primary)';
+                                    e.currentTarget.style.background = 'var(--bg-tertiary)';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.currentTarget.style.color = 'var(--text-tertiary)';
+                                    e.currentTarget.style.background = 'none';
+                                }}
+                            >
+                                <X size={20} />
                             </button>
                         </div>
 

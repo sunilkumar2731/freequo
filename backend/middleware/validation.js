@@ -38,10 +38,12 @@ export const registerValidation = [
 
 export const loginValidation = [
     body('email')
+        .if((value, { req }) => !req.body.isPhone)
         .isEmail()
         .withMessage('Please provide a valid email')
         .normalizeEmail(),
     body('password')
+        .if((value, { req }) => !req.body.isSocial && !req.body.isPhone)
         .notEmpty()
         .withMessage('Password is required')
 ];

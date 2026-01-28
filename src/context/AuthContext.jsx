@@ -66,6 +66,8 @@ export function AuthProvider({ children }) {
     const [users, setUsers] = useState([])
     const [loading, setLoading] = useState(true)
     const [token, setToken] = useState(null)
+    const [adminToken, setAdminToken] = useState(null)
+    const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false)
 
     // Initialize auth state
     useEffect(() => {
@@ -89,21 +91,33 @@ export function AuthProvider({ children }) {
                     localStorage.removeItem('freequo_token')
                     localStorage.removeItem('freequo_user')
                 }
-            } else if (storedUser) {
+            } else if (!USE_API && storedUser) {
                 // Demo mode - use localStorage
                 setUser(JSON.parse(storedUser))
                 const storedUsers = localStorage.getItem('freequo_demo_users')
                 setUsers(storedUsers ? JSON.parse(storedUsers) : demoUsers)
-            } else {
+            } else if (!USE_API) {
                 // Initialize demo users
                 setUsers(demoUsers)
                 localStorage.setItem('freequo_demo_users', JSON.stringify(demoUsers))
+            } else if (USE_API) {
+                // In API mode, we don't want demo users polluting the state
+                setUsers([])
             }
 
             setLoading(false)
         }
 
         initAuth()
+    }, [])
+
+    // Initialize admin session
+    useEffect(() => {
+        const storedAdminToken = sessionStorage.getItem('freequo_admin_token')
+        if (storedAdminToken) {
+            setAdminToken(storedAdminToken)
+            setIsAdminAuthenticated(true)
+        }
     }, [])
 
     // Login function
@@ -158,14 +172,16 @@ export function AuthProvider({ children }) {
                 try {
                     // Try to login/register with backend using firebase token
                     const token = await firebaseUser.getIdToken()
-                    const response = await authAPI.login({
+                    console.log('📡 Syncing with backend...')
+                    const response = await authAPI.googleLogin({
                         email: firebaseUser.email,
                         firebaseToken: token,
                         isSocial: true,
                         role // Default role if new user
                     })
 
-                    const { user: userData, token: authToken } = response.data || response
+                    console.log('✅ Backend Synced Successfully')
+                    const { user: userData, token: authToken } = response.data || response;
 
                     if (!userData) {
                         throw new Error(response.message || 'Social login failed: No user data received')
@@ -337,6 +353,39 @@ export function AuthProvider({ children }) {
         }
     }, [users])
 
+    const adminLogin = useCallback(async (password) => {
+        try {
+            if (USE_API) {
+                const response = await authAPI.adminLogin({
+                    password,
+                    email: user?.email // Optional: verify against current user email
+                })
+                const { token: authToken } = response.data || response
+
+                setAdminToken(authToken)
+                setIsAdminAuthenticated(true)
+                sessionStorage.setItem('freequo_admin_token', authToken)
+
+                return { success: true }
+            } else {
+                // Demo mode
+                if (password === 'Admin@27') {
+                    setIsAdminAuthenticated(true)
+                    return { success: true }
+                }
+                return { success: false, error: 'Invalid admin password' }
+            }
+        } catch (error) {
+            return { success: false, error: error.message || 'Admin authentication failed' }
+        }
+    }, [user])
+
+    const adminLogout = useCallback(() => {
+        setAdminToken(null)
+        setIsAdminAuthenticated(false)
+        sessionStorage.removeItem('freequo_admin_token')
+    }, [])
+
     // Logout function
     const logout = useCallback(() => {
         setUser(null)
@@ -411,6 +460,10 @@ export function AuthProvider({ children }) {
         loginWithPhone,
         verifyOTP,
         logout,
+        adminLogin,
+        adminLogout,
+        adminToken,
+        isAdminAuthenticated,
         updateUser,
         updateUserStatus,
         removeUser,
