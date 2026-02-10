@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin, Instagram } from 'lucide-react'
+import { useAuth } from '../../context/AuthContext'
 import './Footer.css'
 
 function Footer() {
+    const { user } = useAuth()
     const currentYear = new Date().getFullYear()
 
     return (
@@ -30,7 +32,12 @@ function Footer() {
                         <h4 className="footer-heading">NAVIGATION</h4>
                         <ul>
                             <li><Link to="/">Home</Link></li>
-                            <li><Link to="/jobs">Find Jobs</Link></li>
+                            {(!user || user.role === 'freelancer') && (
+                                <li><Link to="/jobs">Find Jobs</Link></li>
+                            )}
+                            {user?.role === 'client' && (
+                                <li><Link to="/client/post-job">Post a Job</Link></li>
+                            )}
                             <li><a href="#">Features</a></li>
                             <li><Link to="/about">About Us</Link></li>
                             <li><a href="#">FAQs</a></li>

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import {
     User,
     Mail,
@@ -14,11 +15,15 @@ import {
     Briefcase,
     Building
 } from 'lucide-react';
+import RoleSelectionModal from '../components/modals/RoleSelectionModal';
+import googleLogo from '../assets/google-logo.png';
+import googleLogoDark from '../assets/google-logo-dark.png';
 import './Auth.css';
 
 function Signup() {
     const navigate = useNavigate();
     const { signup, loginWithGoogle, isAuthenticated, user } = useAuth();
+    const { theme } = useTheme();
 
     const [formData, setFormData] = useState({
         name: '',
@@ -32,6 +37,7 @@ function Signup() {
     const [loading, setLoading] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
     const [focusedField, setFocusedField] = useState(null);
+    const [showRoleModal, setShowRoleModal] = useState(false);
 
     // Redirect if already authenticated
     useEffect(() => {
@@ -73,14 +79,21 @@ function Signup() {
 
     const handleGoogleSignup = async () => {
         setError('');
+        setShowRoleModal(true);
+    };
+
+    const handleGoogleRoleSelect = async (role) => {
+        setShowRoleModal(false);
+        setLoading(true);
         try {
-            // Pass the selected role to Google login
-            const result = await loginWithGoogle(formData.role);
+            const result = await loginWithGoogle(role);
             if (!result.success) {
                 setError(result.error);
             }
         } catch (err) {
             setError('Google signup failed');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -249,7 +262,7 @@ function Signup() {
 
                             <div className="social-auth-buttons">
                                 <button type="button" className="social-btn google" onClick={handleGoogleSignup}>
-                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/smartlock/icon_google.svg" alt="Google" />
+                                    <img src={theme === 'dark' ? googleLogoDark : googleLogo} alt="Google" />
                                     <span>Continue with Google</span>
                                 </button>
                             </div>
@@ -260,6 +273,12 @@ function Signup() {
                         </div>
                     </div>
                 </div>
+
+                <RoleSelectionModal
+                    isOpen={showRoleModal}
+                    onClose={() => setShowRoleModal(false)}
+                    onSelect={handleGoogleRoleSelect}
+                />
             </div>
         </div>
     );

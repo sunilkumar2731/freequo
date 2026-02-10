@@ -17,7 +17,7 @@
 }
 
 .payment-header svg {
-    color: #667eea;
+    color: var(--primary-500);
 }
 
 .payment-header h3 {
@@ -60,7 +60,7 @@
 
 .amount-row .amount {
     font-size: 1.25rem;
-    color: #667eea;
+    color: var(--primary-600);
 }
 
 .mock-notice {
@@ -68,9 +68,9 @@
     align-items: center;
     gap: 8px;
     padding: 10px 14px;
-    background: #fef3c7;
-    color: #92400e;
-    border-radius: 8px;
+    background: #fdfaf6;
+    color: #8B654A;
+    border: 1px solid #f1e8d4;
     font-size: 0.85rem;
     margin-bottom: 16px;
 }
@@ -94,7 +94,7 @@
     justify-content: center;
     gap: 10px;
     padding: 14px 24px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--gradient-primary);
     color: white;
     border: none;
     border-radius: 12px;
@@ -106,7 +106,7 @@
 
 .pay-button:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 .pay-button:disabled {
@@ -143,20 +143,20 @@
 }
 
 .payment-security svg {
-    color: #10b981;
+    color: var(--success-500);
 }
 
 .escrow-note {
     margin-top: 16px;
     padding: 12px;
-    background: #eff6ff;
+    background: var(--primary-50);
     border-radius: 8px;
 }
 
 .escrow-note p {
     margin: 0;
     font-size: 0.85rem;
-    color: #1e40af;
+    color: var(--primary-800);
     line-height: 1.5;
 }
 
@@ -176,7 +176,7 @@
     justify-content: center;
     width: 100px;
     height: 100px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
     border-radius: 50%;
     margin-bottom: 24px;
 }
@@ -206,7 +206,7 @@
 }
 
 .payment-success .payment-details strong {
-    color: #10b981;
+    color: var(--success-600);
     font-size: 1.25rem;
 }
 

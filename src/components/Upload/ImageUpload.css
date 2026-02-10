@@ -18,13 +18,13 @@
 }
 
 .upload-area:hover {
-    border-color: #667eea;
-    background: #f5f3ff;
+    border-color: var(--primary-500);
+    background: var(--primary-50);
 }
 
 .upload-area.uploading {
-    border-color: #667eea;
-    background: #f5f3ff;
+    border-color: var(--primary-500);
+    background: var(--primary-50);
     cursor: wait;
 }
 
@@ -35,7 +35,7 @@
 }
 
 .upload-area.has-preview:hover {
-    border-color: #667eea;
+    border-color: var(--primary-500);
 }
 
 .upload-placeholder {
@@ -65,7 +65,7 @@
     flex-direction: column;
     align-items: center;
     gap: 12px;
-    color: #667eea;
+    color: var(--primary-500);
 }
 
 .upload-loading .spinner {

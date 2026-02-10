@@ -42,7 +42,7 @@
 .hero-orb-1 {
     width: 500px;
     height: 500px;
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.05) 0%, transparent 70%);
     top: -100px;
     left: -100px;
     animation: orbFloat 15s ease-in-out infinite;
@@ -51,7 +51,7 @@
 .hero-orb-2 {
     width: 400px;
     height: 400px;
-    background: radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.03) 0%, transparent 70%);
     bottom: -100px;
     right: -100px;
     animation: orbFloat 18s ease-in-out infinite reverse;
@@ -73,8 +73,8 @@
     position: absolute;
     inset: 0;
     background-image:
-        linear-gradient(rgba(99, 102, 241, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(99, 102, 241, 0.03) 1px, transparent 1px);
+        linear-gradient(rgba(0, 0, 0, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
     background-size: 60px 60px;
 }
 
@@ -99,8 +99,8 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(16, 185, 129, 0.1));
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-full);
     font-size: 0.875rem;
     font-weight: 500;
@@ -117,7 +117,7 @@
 }
 
 .gradient-text {
-    background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+    background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -192,10 +192,7 @@
 .illustration-card h3 {
     font-size: 2rem;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--primary-600), var(--accent-500));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
     margin-bottom: 0.5rem;
 }
 
@@ -258,7 +255,7 @@
     display: block;
     font-size: 2.5rem;
     font-weight: 800;
-    background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+    background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -295,7 +292,7 @@
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(16, 185, 129, 0.1));
+    background: var(--bg-tertiary);
     border-radius: var(--radius-full);
     font-size: 0.875rem;
     font-weight: 600;
@@ -394,14 +391,14 @@
     width: 72px;
     height: 72px;
     margin: 0 auto 1.5rem;
-    background: linear-gradient(135deg, var(--primary-500), var(--accent-500));
+    background: var(--gradient-primary);
     border-radius: var(--radius-xl);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     transition: all 0.4s ease;
-    box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 .value-card h3 {
@@ -617,4 +614,65 @@
     .cta-buttons {
         flex-direction: column;
     }
+}
+
+/* ==================== DARK MODE ENHANCEMENTS ==================== */
+
+[data-theme='dark'] .about-page,
+[data-theme='dark'] .about-hero,
+[data-theme='dark'] .stats-section,
+[data-theme='dark'] .cta-section {
+    background: #121826 !important;
+}
+
+[data-theme='dark'] .stat-card,
+[data-theme='dark'] .mission-point,
+[data-theme='dark'] .value-card,
+[data-theme='dark'] .illustration-card {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme='dark'] .section-badge,
+[data-theme='dark'] .hero-badge {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme='dark'] .gradient-text {
+    background: linear-gradient(135deg, #FFFFFF, var(--accent-400)) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+[data-theme='dark'] .stat-number {
+    background: linear-gradient(135deg, #FFFFFF, var(--accent-400)) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+}
+
+[data-theme='dark'] .btn-white {
+    background: #374151 !important;
+    color: white !important;
+}
+
+[data-theme='dark'] .btn-white:hover {
+    background: #4b5563 !important;
+}
+
+[data-theme='dark'] .hero-grid {
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px) !important;
+}
+
+[data-theme='dark'] .value-icon {
+    background: #374151 !important;
+}
+
+[data-theme='dark'] .cta-card {
+    background: #1E293B !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }

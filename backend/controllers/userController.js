@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import { sendDirectMessageEmail } from '../services/emailService.js';
 
 // @desc    Get all freelancers
 // @route   GET /api/users/freelancers
@@ -191,6 +192,62 @@ export const getClients = async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Error fetching clients'
+        });
+    }
+};
+
+// @route   POST /api/users/:id/message
+// @access  Private
+export const sendMessage = async (req, res) => {
+    try {
+        const { message } = req.body;
+        const receiverId = req.params.id;
+        const sender = req.user; // From auth middleware
+
+        if (!message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Message content is required'
+            });
+        }
+
+        let receiverEmail;
+        let receiverName;
+
+        // Handle demo IDs
+        if (receiverId === 'client-1' || receiverId === 'demo-client') {
+            receiverEmail = 'freequoo@gmail.com';
+            receiverName = 'John Smith';
+        } else {
+            const receiver = await User.findById(receiverId);
+            if (!receiver) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Recipient not found'
+                });
+            }
+            receiverEmail = receiver.email;
+            receiverName = receiver.name;
+        }
+
+        // Send email via service
+        await sendDirectMessageEmail(
+            receiverEmail,
+            sender.name,
+            sender.email,
+            message
+        );
+
+        res.json({
+            success: true,
+            message: 'Message sent successfully'
+        });
+
+    } catch (error) {
+        console.error('Send message error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error sending message'
         });
     }
 };

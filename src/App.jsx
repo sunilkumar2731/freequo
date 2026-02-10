@@ -24,6 +24,7 @@ import EditProfile from './pages/EditProfile'
 import About from './pages/About'
 import MyApplications from './pages/MyApplications'
 import ProjectProgress from './pages/ProjectProgress'
+import ClientProfile from './pages/ClientProfile'
 
 import PhoneAuthTest from './pages/PhoneAuthTest'
 
@@ -94,6 +95,7 @@ function AppContent() {
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/jobs/:id" element={<JobDetails />} />
           <Route path="/freelancer/:id" element={<FreelancerProfile />} />
+          <Route path="/client/:id" element={<ClientProfile />} />
           <Route path="/test-phone-auth" element={<PhoneAuthTest />} />
 
           {/* Protected Routes */}

@@ -176,7 +176,9 @@ function JobDetails() {
                                     {job.clientName?.charAt(0) || job.client?.name?.charAt(0) || 'C'}
                                 </div>
                                 <div>
-                                    <div className="client-name">{job.clientName || job.client?.name}</div>
+                                    <Link to={`/client/${job.clientId || job.client?._id || job.client}`} className="client-name">
+                                        {job.clientName || job.client?.name}
+                                    </Link>
                                     <div className="client-company">{job.company || job.client?.company}</div>
                                 </div>
                             </div>

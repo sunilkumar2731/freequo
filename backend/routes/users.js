@@ -3,7 +3,8 @@ import {
     getFreelancers,
     getUserById,
     updateProfile,
-    getClients
+    getClients,
+    sendMessage
 } from '../controllers/userController.js';
 import { protect, authorize, optionalAuth } from '../middleware/auth.js';
 import { validate, mongoIdParam } from '../middleware/validation.js';
@@ -16,6 +17,7 @@ router.get('/:id', optionalAuth, mongoIdParam('id'), validate, getUserById);
 
 // Protected routes
 router.put('/profile', protect, updateProfile);
+router.post('/:id/message', protect, mongoIdParam('id'), validate, sendMessage);
 
 // Admin routes
 router.get('/admin/clients', protect, authorize('admin'), getClients);

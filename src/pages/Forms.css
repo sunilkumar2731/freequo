@@ -99,7 +99,7 @@
 .form-select:focus {
     outline: none;
     border-color: var(--primary-500);
-    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 /* Form Elements Grouping */
@@ -184,7 +184,7 @@
 }
 
 .radio-option.selected {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(16, 185, 129, 0.1));
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(193, 154, 107, 0.05));
     border-color: var(--primary-500);
 }
 

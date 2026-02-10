@@ -72,8 +72,8 @@
     justify-content: space-between;
     gap: 1.5rem;
     padding: 1.25rem 1.5rem;
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.05));
-    border: 1px solid rgba(245, 158, 11, 0.2);
+    background: linear-gradient(135deg, rgba(193, 154, 107, 0.1), rgba(0, 0, 0, 0.03));
+    border: 1px solid rgba(193, 154, 107, 0.2);
     border-radius: var(--radius-xl);
     margin-bottom: 2rem;
 }
@@ -88,12 +88,12 @@
 .completion-icon {
     width: 48px;
     height: 48px;
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(193, 154, 107, 0.15);
     border-radius: var(--radius-lg);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--warning-600);
+    color: var(--accent-700);
 }
 
 .completion-text h4 {
@@ -124,7 +124,7 @@
 
 .progress-bar {
     height: 100%;
-    background: linear-gradient(90deg, var(--warning-500), var(--warning-400));
+    background: linear-gradient(90deg, var(--accent-500), var(--accent-400));
     border-radius: var(--radius-full);
     transition: width 0.5s ease;
 }
@@ -193,8 +193,8 @@
 }
 
 .stat-icon.blue {
-    background: rgba(59, 130, 246, 0.1);
-    color: var(--primary-600);
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--primary-500);
 }
 
 .stat-icon.green {
@@ -203,8 +203,8 @@
 }
 
 .stat-icon.purple {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
+    background: rgba(193, 154, 107, 0.1);
+    color: var(--accent-600);
 }
 
 .stat-icon.orange {
@@ -409,8 +409,8 @@
 }
 
 .status-pill.in-progress {
-    background: rgba(59, 130, 246, 0.15);
-    color: var(--primary-600);
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-primary);
 }
 
 .status-pill.completed {
@@ -424,8 +424,8 @@
 }
 
 .status-pill.pending {
-    background: rgba(245, 158, 11, 0.15);
-    color: var(--warning-600);
+    background: rgba(193, 154, 107, 0.15);
+    color: var(--accent-700);
 }
 
 .status-pill.paid {
@@ -461,7 +461,7 @@
     width: 44px;
     height: 44px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+    background: var(--gradient-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -504,7 +504,7 @@
     gap: 0.25rem;
     font-size: 0.875rem;
     font-weight: 600;
-    color: var(--warning-500);
+    color: var(--accent-500);
 }
 
 .bid-amount {
@@ -626,7 +626,7 @@
 }
 
 .notification-item.unread {
-    background: rgba(59, 130, 246, 0.05);
+    background: rgba(193, 154, 107, 0.05);
 }
 
 .notification-icon {
@@ -643,7 +643,7 @@
 
 .notification-item.unread .notification-icon {
     background: var(--primary-100);
-    color: var(--primary-600);
+    color: var(--primary-500);
 }
 
 .notification-content p {
@@ -681,7 +681,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--primary-400), var(--accent-500));
+    background: var(--gradient-primary);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -700,7 +700,7 @@
     align-items: center;
     gap: 0.25rem;
     font-size: 0.75rem;
-    color: var(--warning-500);
+    color: var(--accent-500);
 }
 
 .recommended-skills {
@@ -776,13 +776,13 @@
 }
 
 .difficulty-badge.intermediate {
-    background: rgba(59, 130, 246, 0.15);
-    color: var(--primary-600);
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-secondary);
 }
 
 .difficulty-badge.expert {
-    background: rgba(139, 92, 246, 0.15);
-    color: #8b5cf6;
+    background: rgba(193, 154, 107, 0.15);
+    color: var(--accent-700);
 }
 
 .job-budget-tag {

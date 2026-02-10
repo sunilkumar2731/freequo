@@ -4,33 +4,33 @@
 
 /* CSS Variables - Design System */
 :root {
-  /* Primary Colors - Indigo/Blue Gradient */
-  --primary-50: #eef2ff;
-  --primary-100: #e0e7ff;
-  --primary-200: #c7d2fe;
-  --primary-300: #a5b4fc;
-  --primary-400: #818cf8;
-  --primary-500: #6366f1;
-  --primary-600: #4f46e5;
-  --primary-700: #4338ca;
-  --primary-800: #3730a3;
-  --primary-900: #312e81;
+  /* Primary Colors - Minimalist Black & White */
+  --primary-50: #f9fafb;
+  --primary-100: #f3f4f6;
+  --primary-200: #e5e7eb;
+  --primary-300: #d1d5db;
+  --primary-400: #9ca3af;
+  --primary-500: #111827;
+  --primary-600: #000000;
+  --primary-700: #000000;
+  --primary-800: #000000;
+  --primary-900: #000000;
 
-  /* Accent Colors - Teal/Emerald */
-  --accent-50: #ecfdf5;
-  --accent-100: #d1fae5;
-  --accent-200: #a7f3d0;
-  --accent-300: #6ee7b7;
-  --accent-400: #34d399;
-  --accent-500: #10b981;
-  --accent-600: #059669;
-  --accent-700: #047857;
-  --accent-800: #065f46;
-  --accent-900: #064e3b;
+  /* Accent Colors - Sandalwood / Beige Tone */
+  --accent-50: #fdfaf6;
+  --accent-100: #f9f4ea;
+  --accent-200: #f1e8d4;
+  --accent-300: #e8d9b8;
+  --accent-400: #dec899;
+  --accent-500: #C19A6B;
+  --accent-600: #A67B5B;
+  --accent-700: #8B654A;
+  --accent-800: #6B4E3A;
+  --accent-900: #4B3629;
 
-  /* Gray Scale */
-  --gray-50: #fafbfc;
-  --gray-100: #f4f5f7;
+  /* Gray Scale - Focused on Professional Gray (#374151) */
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
   --gray-200: #e5e7eb;
   --gray-300: #d1d5db;
   --gray-400: #9ca3af;
@@ -48,15 +48,15 @@
   --error-500: #ef4444;
   --error-600: #dc2626;
 
-  /* Gradient Colors */
-  --gradient-start: #4f46e5;
-  --gradient-end: #10b981;
+  /* Gradient Colors - Monochrome */
+  --gradient-start: #111827;
+  --gradient-end: #000000;
   --gradient-primary: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
 
   /* Glass Effect */
   --glass-bg: rgba(255, 255, 255, 0.7);
   --glass-border: rgba(255, 255, 255, 0.3);
-  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
 
   /* Shadows - Enhanced */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -65,8 +65,8 @@
   --shadow-lg: 0 10px 25px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.05);
   --shadow-xl: 0 20px 40px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.04);
   --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.15);
-  --shadow-glow: 0 0 40px rgba(99, 102, 241, 0.15);
-  --shadow-glow-accent: 0 0 40px rgba(16, 185, 129, 0.15);
+  --shadow-glow: 0 0 40px rgba(0, 0, 0, 0.08);
+  --shadow-glow-accent: 0 0 40px rgba(193, 154, 107, 0.1);
 
   /* Transitions */
   --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -92,9 +92,9 @@
   --bg-secondary: #ffffff;
   --bg-tertiary: #f1f5f9;
 
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-tertiary: #94a3b8;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-tertiary: #6b7280;
 
   --border-color: #e2e8f0;
   --navbar-bg: rgba(255, 255, 255, 0.8);
@@ -106,34 +106,95 @@
 
 /* Dark Mode Variables */
 [data-theme='dark'] {
-  --bg-primary: #0B0F1A;
-  --bg-secondary: #0E1320;
-  --bg-tertiary: #151A2E;
+  --bg-primary: #121826;
+  --bg-secondary: #1E293B;
+  --bg-tertiary: #334155;
 
-  --text-primary: #F9FAFB;
-  --text-secondary: #CBD5E1;
-  --text-tertiary: #94A3B8;
+  --text-primary: #FFFFFF;
+  --text-secondary: #F8FAFC;
+  --text-tertiary: #E2E8F0;
 
-  --border-color: rgba(255, 255, 255, 0.05);
-  --navbar-bg: rgba(11, 15, 26, 0.85);
-  --navbar-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --border-color: rgba(255, 255, 255, 0.25);
+  --navbar-bg: rgba(18, 24, 38, 0.9);
+  --navbar-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
 
-  --card-bg: #151A2E;
-  --card-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  --card-bg: #1E293B;
+  --card-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 
-  --gray-50: #0B0F1A;
-  --gray-100: #0E1320;
-  --gray-200: #151A2E;
-  --gray-300: #334155;
-  --gray-400: #475569;
-  --gray-500: #94A3B8;
-  --gray-600: #CBD5E1;
-  --gray-700: #E2E8F0;
-  --gray-800: #F1F5F9;
-  --gray-900: #F9FAFB;
+  --primary-50: #1E293B;
+  --primary-100: #1E293B;
+  --primary-200: #334155;
+  --primary-300: #475569;
+  --primary-400: #94A3B8;
+  --primary-500: #F1F5F9;
+  --primary-600: #F8FAFC;
+  --primary-700: #FFFFFF;
+  --primary-800: #FFFFFF;
+  --primary-900: #FFFFFF;
 
-  --glass-bg: rgba(22, 28, 44, 0.7);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --accent-50: #2A1F16;
+  --accent-100: #35261C;
+  --accent-200: #4D382B;
+  --accent-300: #6B4E3A;
+  --accent-400: #8B654A;
+
+  --gray-50: #121826;
+  --gray-100: #1E293B;
+  --gray-200: #334155;
+  --gray-300: #475569;
+  --gray-400: #94A3B8;
+  --gray-500: #CBD5E1;
+  --gray-600: #E2E8F0;
+  --gray-700: #F1F5F9;
+  --gray-800: #F8FAFC;
+  --gray-900: #FFFFFF;
+
+  --glass-bg: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
+
+  --gradient-start: #374151;
+  --gradient-end: #1f2937;
+}
+
+/* Global Content Border in Dark Mode - Focused ONLY on actual cards/content boxes */
+[data-theme='dark'] .card,
+[data-theme='dark'] .stat-card,
+[data-theme='dark'] .category-card,
+[data-theme='dark'] .step-card,
+[data-theme='dark'] .testimonial-card,
+[data-theme='dark'] .job-card,
+[data-theme='dark'] .applicant-card,
+[data-theme='dark'] .form-container,
+[data-theme='dark'] .auth-card {
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+/* Specifically remove borders from unwanted functional areas in dark mode */
+[data-theme='dark'] .jobs-search,
+[data-theme='dark'] .filter-toggle,
+[data-theme='dark'] .filters-panel,
+[data-theme='dark'] .clear-filters,
+[data-theme='dark'] .search-box,
+[data-theme='dark'] .empty-state,
+[data-theme='dark'] .skill-tag,
+[data-theme='dark'] .skill-item,
+[data-theme='dark'] .skill-badge,
+[data-theme='dark'] .job-tag,
+[data-theme='dark'] .status-badge,
+[data-theme='dark'] .role-badge,
+[data-theme='dark'] .status-pill {
+  border: none !important;
+  background: var(--bg-tertiary) !important;
+  color: #FFFFFF !important;
+}
+
+/* Subtle separators for dark mode */
+[data-theme='dark'] .job-meta,
+[data-theme='dark'] .job-applicants,
+[data-theme='dark'] .dropdown-divider,
+[data-theme='dark'] .job-section,
+[data-theme='dark'] .job-header-card {
+  border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
 body {
@@ -271,12 +332,13 @@ h6 {
 .btn-primary {
   background: var(--gradient-primary);
   color: white;
-  box-shadow: 0 4px 14px rgba(0, 180, 216, 0.3);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
 }
 
 .btn-primary:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 25px rgba(0, 180, 216, 0.4);
+  background: #232d3f;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
 }
 
 .btn-secondary {
@@ -393,7 +455,7 @@ h6 {
   outline: none;
   border-color: var(--primary-500);
   background: var(--bg-primary);
-  box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
 }
 
 .form-input::placeholder,
@@ -448,7 +510,7 @@ h6 {
   height: 40px;
   border-radius: var(--radius-full);
   object-fit: cover;
-  background: linear-gradient(135deg, var(--primary-400), var(--primary-600));
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;

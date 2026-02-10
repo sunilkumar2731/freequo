@@ -86,7 +86,8 @@ export const authAPI = {
 export const usersAPI = {
     getFreelancers: (params = {}) => api.get('/users/freelancers', { params }),
     getUser: (id) => api.get(`/users/${id}`),
-    updateProfile: (data) => api.put('/users/profile', data)
+    updateProfile: (data) => api.put('/users/profile', data),
+    sendMessage: (id, message) => api.post(`/users/${id}/message`, { message })
 };
 
 // ========================================

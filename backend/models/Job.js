@@ -59,6 +59,9 @@ const jobSchema = new mongoose.Schema({
         enum: ['open', 'in-progress', 'completed', 'cancelled', 'closed'],
         default: 'open'
     },
+    deadline: {
+        type: Date
+    },
     // Client info
     client: {
         type: mongoose.Schema.Types.ObjectId,

@@ -336,9 +336,9 @@ function ClientDashboard() {
                                     <Plus size={20} />
                                     <span>Post Job</span>
                                 </Link>
-                                <Link to="/jobs" className="quick-action">
-                                    <Eye size={20} />
-                                    <span>Browse</span>
+                                <Link to={`/client/${user?._id || user?.id}`} className="quick-action">
+                                    <Users size={20} />
+                                    <span>My Profile</span>
                                 </Link>
                                 <Link to="/messages" className="quick-action">
                                     <MessageSquare size={20} />

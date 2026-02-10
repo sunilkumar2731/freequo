@@ -230,12 +230,75 @@ const emailTemplates = {
         </body>
         </html>
         `
+    }),
+
+    adminNewUser: (name, email, role, date) => ({
+        subject: 'New User Joined – Freequo',
+        html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                .container { font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #334155; }
+                .content { background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; padding: 30px; }
+                .detail { margin-bottom: 10px; }
+                .label { font-weight: bold; color: #6366f1; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h2>New User Registered 🚀</h2>
+                <div class="content">
+                    <div class="detail"><span class="label">Name:</span> ${name}</div>
+                    <div class="detail"><span class="label">Email:</span> ${email}</div>
+                    <div class="detail"><span class="label">Role:</span> ${role}</div>
+                    <div class="detail"><span class="label">Date:</span> ${date}</div>
+                </div>
+            </div>
+        </body>
+        </html>
+        `
+    }),
+
+    directMessage: (senderName, senderEmail, message) => ({
+        subject: `New Message from ${senderName} on Freequo 📩`,
+        html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                .container { font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #334155; }
+                .content { background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 30px; }
+                .message-box { background: #f1f5f9; padding: 20px; border-radius: 8px; margin: 20px 0; font-style: italic; }
+                .footer { color: #64748b; font-size: 13px; text-align: center; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="content">
+                    <h2>Hi there!</h2>
+                    <p>You have received a new message from <strong>${senderName}</strong> (${senderEmail}) via the Freequo platform.</p>
+                    <div class="message-box">
+                        "${message}"
+                    </div>
+                    <p>You can reply directly to this email or log in to Freequo to communicate.</p>
+                </div>
+                <div class="footer">
+                    <p>© Freequo - Connecting talent with opportunity</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `
     })
 };
 
 // --- Helper functions ---
 export const sendWelcomeEmail = (email, name, role) =>
     sendEmail(email, 'welcome', [name, role]);
+
+export const sendAdminNewUserEmail = (name, email, role) =>
+    sendEmail('freequoo@gmail.com', 'adminNewUser', [name, email, role, new Date().toLocaleString()]);
 
 export const sendApplicationConfirmedEmail = (email, name, jobName, salary, duration, appliedOn) =>
     sendEmail(email, 'applicationConfirmed', [name, jobName, salary, duration, appliedOn]);
@@ -245,6 +308,9 @@ export const sendProposalReceivedEmail = (email, clientName, freelancerName, job
 
 export const sendProposalAcceptedEmail = (email, freelancerName, jobTitle, clientName) =>
     sendEmail(email, 'proposalAccepted', [freelancerName, jobTitle, clientName]);
+
+export const sendDirectMessageEmail = (toEmail, senderName, senderEmail, message) =>
+    sendEmail(toEmail, 'directMessage', [senderName, senderEmail, message]);
 
 // Backward compatibility or legacy support
 export const sendProposalSubmittedEmail = (email, freelancerName, jobTitle) =>
@@ -256,9 +322,11 @@ export const sendJobPostedEmail = (email, name, jobTitle) =>
 export default {
     sendEmail,
     sendWelcomeEmail,
+    sendAdminNewUserEmail,
     sendApplicationConfirmedEmail,
     sendProposalReceivedEmail,
     sendProposalAcceptedEmail,
     sendProposalSubmittedEmail,
-    sendJobPostedEmail
+    sendJobPostedEmail,
+    sendDirectMessageEmail
 };

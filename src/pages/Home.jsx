@@ -111,25 +111,28 @@ function Home() {
                                 </>
                             )}
                         </div>
-                        <div className="hero-search">
-                            <div className="search-box">
-                                <Search size={20} className="search-icon" />
-                                <input
-                                    type="text"
-                                    placeholder="Search for any service..."
-                                    className="search-input"
-                                />
-                                <Link to="/jobs" className="btn btn-primary">
-                                    Search
-                                </Link>
+
+                        {(!isAuthenticated || user?.role === 'freelancer') && (
+                            <div className="hero-search">
+                                <div className="search-box">
+                                    <Search size={20} className="search-icon" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search for any service..."
+                                        className="search-input"
+                                    />
+                                    <Link to="/jobs" className="btn btn-primary">
+                                        Search
+                                    </Link>
+                                </div>
+                                <div className="popular-searches">
+                                    <span>Popular:</span>
+                                    <Link to="/jobs?category=Web Development">Web Development</Link>
+                                    <Link to="/jobs?category=Design">Design</Link>
+                                    <Link to="/jobs?category=Writing">Writing</Link>
+                                </div>
                             </div>
-                            <div className="popular-searches">
-                                <span>Popular:</span>
-                                <Link to="/jobs?category=Web Development">Web Development</Link>
-                                <Link to="/jobs?category=Design">Design</Link>
-                                <Link to="/jobs?category=Writing">Writing</Link>
-                            </div>
-                        </div>
+                        )}
                     </div>
                     <div className="hero-visual">
                         <div className="hero-card hero-card-1">

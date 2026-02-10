@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
 import admin from '../config/firebase.js';
-import { sendWelcomeEmail } from '../services/emailService.js';
+import { sendWelcomeEmail, sendAdminNewUserEmail } from '../services/emailService.js';
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -66,6 +66,11 @@ export const register = async (req, res) => {
         // Send welcome email (Background - do not await)
         sendWelcomeEmail(user.email, user.name, user.role).catch(err => {
             console.error('Background welcome email error:', err);
+        });
+
+        // Notify Admin of new user
+        sendAdminNewUserEmail(user.name, user.email, user.role).catch(err => {
+            console.error('Admin notification email error:', err);
         });
 
         res.status(201).json({
@@ -148,8 +153,9 @@ export const login = async (req, res) => {
                     // Send welcome email for social login
                     try {
                         await sendWelcomeEmail(user.email, user.name, user.role);
+                        await sendAdminNewUserEmail(user.name, user.email, user.role);
                     } catch (emailError) {
-                        console.error('Failed to send welcome email (social):', emailError);
+                        console.error('Failed to send notification emails (social):', emailError);
                     }
                 }
             } catch (fbError) {

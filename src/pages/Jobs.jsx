@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useState, useMemo, useEffect } from 'react'
+import { Link, useSearchParams, useNavigate } from 'react-router-dom'
 import { useData } from '../context/DataContext'
+import { useAuth } from '../context/AuthContext'
 import {
     Search,
     Filter,
@@ -15,13 +16,23 @@ import './Jobs.css'
 
 function Jobs() {
     const { jobs = [], categories = [] } = useData() || {}
+    const { user, isAuthenticated } = useAuth()
     const [searchParams, setSearchParams] = useSearchParams()
+    const navigate = useNavigate()
+
+    useEffect(() => {
+        if (isAuthenticated && user?.role === 'client') {
+            navigate('/client/dashboard')
+        }
+    }, [user, isAuthenticated, navigate])
 
     const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '')
     const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || '')
     const [selectedExperience, setSelectedExperience] = useState('')
     const [selectedBudgetType, setSelectedBudgetType] = useState('')
     const [showFilters, setShowFilters] = useState(false)
+
+    if (user?.role === 'client') return null;
 
     // Debug log
     console.log('Jobs Component Render:', { jobsLength: jobs?.length, categoriesLength: categories?.length })
@@ -218,7 +229,18 @@ function Jobs() {
                                     <div className="job-card-header">
                                         <div className="job-main">
                                             <h3 className="job-title">{job.title}</h3>
-                                            <p className="job-company">{job.clientName} • {job.company}</p>
+                                            <p className="job-company">
+                                                <span
+                                                    className="clickable-client"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        navigate(`/client/${job.clientId || job.client?._id || job.client}`);
+                                                    }}
+                                                >
+                                                    {job.clientName || job.client?.name}
+                                                </span> • {job.company || job.client?.company || 'Freelance'}
+                                            </p>
                                         </div>
                                         <div className="job-budget">
                                             <span className="budget-value">{formatBudget(job)}</span>

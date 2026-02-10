@@ -111,8 +111,8 @@
 }
 
 .admin-stat-card.primary .stat-icon-wrap {
-    background: rgba(59, 130, 246, 0.1);
-    color: var(--primary-600);
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--primary-500);
 }
 
 .admin-stat-card.success .stat-icon-wrap {
@@ -121,13 +121,13 @@
 }
 
 .admin-stat-card.info .stat-icon-wrap {
-    background: rgba(6, 182, 212, 0.1);
-    color: #06b6d4;
+    background: rgba(193, 154, 107, 0.1);
+    color: var(--accent-600);
 }
 
 .admin-stat-card.warning .stat-icon-wrap {
-    background: rgba(245, 158, 11, 0.1);
-    color: var(--warning-600);
+    background: rgba(193, 154, 107, 0.05);
+    color: var(--accent-500);
 }
 
 .admin-stat-card svg {
@@ -623,13 +623,13 @@
 }
 
 .role-badge.freelancer {
-    background: rgba(139, 92, 246, 0.15);
-    color: #7c3aed;
+    background: rgba(193, 154, 107, 0.15);
+    color: var(--accent-700);
 }
 
 .role-badge.client {
-    background: rgba(59, 130, 246, 0.15);
-    color: var(--primary-600);
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--text-primary);
 }
 
 .status-badge {

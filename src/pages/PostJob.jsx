@@ -1,14 +1,20 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
-import { ArrowLeft, Plus, X } from 'lucide-react'
-import './Forms.css'
+import { ArrowLeft, Plus, X, Briefcase, DollarSign, Clock, LayoutGrid, Award, Calendar } from 'lucide-react'
+import './PostJob.css'
 
 function PostJob() {
     const navigate = useNavigate()
-    const { user } = useAuth()
+    const { user, isAuthenticated } = useAuth()
     const { createJob, categories } = useData()
+
+    useEffect(() => {
+        if (isAuthenticated && user?.role !== 'client') {
+            navigate('/')
+        }
+    }, [user, isAuthenticated, navigate])
 
     const [formData, setFormData] = useState({
         title: '',
@@ -17,6 +23,7 @@ function PostJob() {
         budget: '',
         budgetType: 'fixed',
         duration: '',
+        deadline: '',
         experience: 'Intermediate',
         skills: [],
         location: 'Remote'
@@ -34,6 +41,14 @@ function PostJob() {
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }))
         }
+    }
+
+    const setBudgetType = (type) => {
+        setFormData(prev => ({ ...prev, budgetType: type }))
+    }
+
+    const setExperience = (level) => {
+        setFormData(prev => ({ ...prev, experience: level }))
     }
 
     const addSkill = () => {
@@ -66,7 +81,8 @@ function PostJob() {
         if (!formData.description.trim()) newErrors.description = 'Description is required'
         if (!formData.category) newErrors.category = 'Category is required'
         if (!formData.budget || isNaN(formData.budget)) newErrors.budget = 'Valid budget is required'
-        if (!formData.duration.trim()) newErrors.duration = 'Duration is required'
+        if (!formData.duration.trim()) newErrors.duration = 'Project duration is required'
+        if (!formData.deadline.trim()) newErrors.deadline = 'Application deadline is required'
         if (formData.skills.length === 0) newErrors.skills = 'At least one skill is required'
 
         setErrors(newErrors)
@@ -76,7 +92,10 @@ function PostJob() {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if (!validate()) return
+        if (!validate()) {
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+            return
+        }
 
         setLoading(true)
 
@@ -102,201 +121,229 @@ function PostJob() {
         }
     }
 
+    if (user?.role !== 'client') return null;
+
     return (
-        <div className="form-page page">
-            <div className="container">
-                <button onClick={() => navigate(-1)} className="back-link">
-                    <ArrowLeft size={18} />
-                    Back
-                </button>
+        <div className="post-job-page">
+            <div className="post-job-container">
+                <div className="post-job-header">
+                    <h1>Create a New Project</h1>
+                    <p>Provide the details below to find the perfect expert for your project.</p>
+                </div>
 
-                <div className="form-container">
-                    <div className="form-header">
-                        <h1>Post a New Job</h1>
-                        <p>Describe your project and find the perfect freelancer</p>
-                    </div>
+                <div className="post-job-card">
+                    <form onSubmit={handleSubmit}>
+                        {/* Section 1: Basic Info */}
+                        <div className="job-section">
+                            <h3><span>1</span> Project Basics</h3>
 
-                    <form onSubmit={handleSubmit} className="job-form">
-                        <div className="form-group">
-                            <label className="form-label">Job Title *</label>
-                            <input
-                                type="text"
-                                name="title"
-                                value={formData.title}
-                                onChange={handleChange}
-                                placeholder="e.g., Build a Modern E-commerce Website"
-                                className={`form-input ${errors.title ? 'error' : ''}`}
-                            />
-                            {errors.title && <span className="form-error">{errors.title}</span>}
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">Description *</label>
-                            <textarea
-                                name="description"
-                                value={formData.description}
-                                onChange={handleChange}
-                                placeholder="Describe your project in detail. Include requirements, deliverables, and any specific skills needed..."
-                                className={`form-textarea ${errors.description ? 'error' : ''}`}
-                                rows={8}
-                            />
-                            {errors.description && <span className="form-error">{errors.description}</span>}
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Category *</label>
-                                <select
-                                    name="category"
-                                    value={formData.category}
+                            <div className="field-group">
+                                <label className="field-label">Project Title</label>
+                                <input
+                                    type="text"
+                                    name="title"
+                                    value={formData.title}
                                     onChange={handleChange}
-                                    className={`form-select ${errors.category ? 'error' : ''}`}
-                                >
-                                    <option value="">Select a category</option>
-                                    {categories.map((cat) => (
-                                        <option key={cat.name} value={cat.name}>{cat.name}</option>
-                                    ))}
-                                </select>
-                                {errors.category && <span className="form-error">{errors.category}</span>}
+                                    placeholder="e.g. Build a High-Performance Landing Page"
+                                    className={`input-style ${errors.title ? 'error' : ''}`}
+                                />
+                                {errors.title && <span className="field-error">{errors.title}</span>}
                             </div>
 
-                            <div className="form-group">
-                                <label className="form-label">Experience Level</label>
-                                <select
-                                    name="experience"
-                                    value={formData.experience}
-                                    onChange={handleChange}
-                                    className="form-select"
-                                >
-                                    <option value="Entry">Entry Level</option>
-                                    <option value="Intermediate">Intermediate</option>
-                                    <option value="Expert">Expert</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Budget *</label>
-                                <div className="input-group">
-                                    <span className="input-prefix">$</span>
-                                    <input
-                                        type="number"
-                                        name="budget"
-                                        value={formData.budget}
+                            <div className="grid-2">
+                                <div className="field-group">
+                                    <label className="field-label">Category</label>
+                                    <select
+                                        name="category"
+                                        value={formData.category}
                                         onChange={handleChange}
-                                        placeholder="5000"
-                                        className={`form-input with-prefix ${errors.budget ? 'error' : ''}`}
-                                        min="1"
-                                    />
+                                        className={`input-style ${errors.category ? 'error' : ''}`}
+                                    >
+                                        <option value="">Select Category</option>
+                                        {categories.map((cat) => (
+                                            <option key={cat.name} value={cat.name}>{cat.name}</option>
+                                        ))}
+                                    </select>
+                                    {errors.category && <span className="field-error">{errors.category}</span>}
                                 </div>
-                                {errors.budget && <span className="form-error">{errors.budget}</span>}
-                            </div>
 
-                            <div className="form-group">
-                                <label className="form-label">Budget Type</label>
-                                <div className="radio-group">
-                                    <label className={`radio-option ${formData.budgetType === 'fixed' ? 'selected' : ''}`}>
-                                        <input
-                                            type="radio"
-                                            name="budgetType"
-                                            value="fixed"
-                                            checked={formData.budgetType === 'fixed'}
-                                            onChange={handleChange}
-                                        />
-                                        <span>Fixed Price</span>
-                                    </label>
-                                    <label className={`radio-option ${formData.budgetType === 'hourly' ? 'selected' : ''}`}>
-                                        <input
-                                            type="radio"
-                                            name="budgetType"
-                                            value="hourly"
-                                            checked={formData.budgetType === 'hourly'}
-                                            onChange={handleChange}
-                                        />
-                                        <span>Hourly Rate</span>
-                                    </label>
+                                <div className="field-group">
+                                    <label className="field-label">Location</label>
+                                    <select
+                                        name="location"
+                                        value={formData.location}
+                                        onChange={handleChange}
+                                        className="input-style"
+                                    >
+                                        <option value="Remote">Remote</option>
+                                        <option value="On-site">On-site</option>
+                                        <option value="Hybrid">Hybrid</option>
+                                    </select>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label className="form-label">Duration *</label>
-                                <input
-                                    type="text"
-                                    name="duration"
-                                    value={formData.duration}
+                        {/* Section 2: Details */}
+                        <div className="job-section">
+                            <h3><span>2</span> Project Details</h3>
+
+                            <div className="field-group">
+                                <label className="field-label">Detailed Description</label>
+                                <textarea
+                                    name="description"
+                                    value={formData.description}
                                     onChange={handleChange}
-                                    placeholder="e.g., 2-3 months"
-                                    className={`form-input ${errors.duration ? 'error' : ''}`}
+                                    placeholder="Explain your goals, requirements, and what you expect from the freelancer..."
+                                    className={`input-style textarea-style ${errors.description ? 'error' : ''}`}
                                 />
-                                {errors.duration && <span className="form-error">{errors.duration}</span>}
+                                {errors.description && <span className="field-error">{errors.description}</span>}
                             </div>
 
-                            <div className="form-group">
-                                <label className="form-label">Location</label>
-                                <select
-                                    name="location"
-                                    value={formData.location}
-                                    onChange={handleChange}
-                                    className="form-select"
-                                >
-                                    <option value="Remote">Remote</option>
-                                    <option value="On-site">On-site</option>
-                                    <option value="Hybrid">Hybrid</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label className="form-label">Required Skills *</label>
-                            <div className="skills-input-container">
-                                <input
-                                    type="text"
-                                    value={skillInput}
-                                    onChange={(e) => setSkillInput(e.target.value)}
-                                    onKeyDown={handleKeyDown}
-                                    placeholder="Type a skill and press Enter"
-                                    className="form-input"
-                                />
-                                <button type="button" onClick={addSkill} className="btn btn-secondary">
-                                    <Plus size={18} />
-                                    Add
-                                </button>
-                            </div>
-                            {errors.skills && <span className="form-error">{errors.skills}</span>}
-
-                            {formData.skills.length > 0 && (
-                                <div className="skills-list">
-                                    {formData.skills.map((skill, index) => (
-                                        <span key={index} className="skill-tag">
-                                            {skill}
-                                            <button type="button" onClick={() => removeSkill(skill)}>
-                                                <X size={14} />
-                                            </button>
-                                        </span>
+                            <div className="field-group">
+                                <label className="field-label">Experience Level Targeted</label>
+                                <div className="pill-selector">
+                                    {['Entry', 'Intermediate', 'Expert'].map(level => (
+                                        <div
+                                            key={level}
+                                            className={`pill-option ${formData.experience === level ? 'active' : ''}`}
+                                            onClick={() => setExperience(level)}
+                                        >
+                                            {level}
+                                        </div>
                                     ))}
                                 </div>
-                            )}
+                            </div>
                         </div>
 
-                        <div className="form-actions">
+                        {/* Section 3: Budget & Timeline */}
+                        <div className="job-section">
+                            <h3><span>3</span> Budget & Timeline</h3>
+
+                            <div className="grid-2">
+                                <div className="field-group">
+                                    <label className="field-label">Primary Budget ($)</label>
+                                    <div className="budget-input-wrapper">
+                                        <span className="budget-prefix">$</span>
+                                        <input
+                                            type="number"
+                                            name="budget"
+                                            value={formData.budget}
+                                            onChange={handleChange}
+                                            placeholder="0.00"
+                                            className={`input-style budget-input ${errors.budget ? 'error' : ''}`}
+                                        />
+                                    </div>
+                                    {errors.budget && <span className="field-error">{errors.budget}</span>}
+                                </div>
+
+                                <div className="field-group">
+                                    <label className="field-label">Budget Structure</label>
+                                    <div className="pill-selector">
+                                        <div
+                                            className={`pill-option ${formData.budgetType === 'fixed' ? 'active' : ''}`}
+                                            onClick={() => setBudgetType('fixed')}
+                                        >
+                                            Fixed Price
+                                        </div>
+                                        <div
+                                            className={`pill-option ${formData.budgetType === 'hourly' ? 'active' : ''}`}
+                                            onClick={() => setBudgetType('hourly')}
+                                        >
+                                            Hourly Rate
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid-2">
+                                <div className="field-group">
+                                    <label className="field-label">Project Duration</label>
+                                    <input
+                                        type="text"
+                                        name="duration"
+                                        value={formData.duration}
+                                        onChange={handleChange}
+                                        placeholder="e.g. 2 Months"
+                                        className={`input-style ${errors.duration ? 'error' : ''}`}
+                                    />
+                                    {errors.duration && <span className="field-error">{errors.duration}</span>}
+                                </div>
+
+                                <div className="field-group">
+                                    <label className="field-label">Application Deadline</label>
+                                    <input
+                                        type="date"
+                                        name="deadline"
+                                        value={formData.deadline}
+                                        onChange={handleChange}
+                                        className={`input-style ${errors.deadline ? 'error' : ''}`}
+                                    />
+                                    {errors.deadline && <span className="field-error">{errors.deadline}</span>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Section 4: Skills */}
+                        <div className="job-section">
+                            <h3><span>4</span> Skills & Expertise</h3>
+                            <div className="field-group">
+                                <label className="field-label">Required Skills</label>
+                                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                    <input
+                                        type="text"
+                                        value={skillInput}
+                                        onChange={(e) => setSkillInput(e.target.value)}
+                                        onKeyDown={handleKeyDown}
+                                        placeholder="Type skill and press Enter"
+                                        className="input-style"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={addSkill}
+                                        className="btn-premium btn-premium-secondary"
+                                        style={{ padding: '0 1.5rem' }}
+                                    >
+                                        Add
+                                    </button>
+                                </div>
+                                {errors.skills && <span className="field-error">{errors.skills}</span>}
+
+                                <div className="skills-container">
+                                    {formData.skills.length > 0 ? (
+                                        <div className="skill-pills-list">
+                                            {formData.skills.map((skill, index) => (
+                                                <span key={index} className="skill-pill">
+                                                    {skill}
+                                                    <button type="button" onClick={() => removeSkill(skill)}>
+                                                        <X size={14} />
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <span style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>No skills added yet</span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="form-footer">
                             <button
                                 type="button"
                                 onClick={() => navigate(-1)}
-                                className="btn btn-secondary"
+                                className="btn-premium btn-premium-secondary"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
-                                className="btn btn-primary"
+                                className="btn-premium btn-premium-primary"
                                 disabled={loading}
                             >
-                                {loading ? 'Posting...' : 'Post Job'}
+                                {loading ? 'Processing...' : 'Launch Project'}
                             </button>
                         </div>
+                        {errors.submit && <p className="field-error" style={{ textAlign: 'center', marginTop: '1rem' }}>{errors.submit}</p>}
                     </form>
                 </div>
             </div>

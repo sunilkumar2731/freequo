@@ -107,7 +107,9 @@ const connectDB = async () => {
 `);
         }
 
-        process.exit(1);
+        // Instead of exiting, we'll just log the error and let the app stay alive
+        // This prevents the "Connection Refused" error on the frontend
+        console.log('⚠️ Server will continue running without database connectivity.');
     }
 };
 

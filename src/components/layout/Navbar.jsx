@@ -50,7 +50,11 @@ function Navbar() {
                 <div className="navbar-container">
                     {/* Logo */}
                     <Link to="/" className="navbar-logo" onClick={handleLogoClick}>
-                        <img src="/freequo-logo.png" alt="Freequo" className="logo-image" />
+                        <img
+                            src={theme === 'dark' ? '/freequo-logo-dark.png' : '/freequo-logo.png'}
+                            alt="Freequo"
+                            className="logo-image"
+                        />
                         <span className="logo-text">Freequo</span>
                     </Link>
 
@@ -59,14 +63,19 @@ function Navbar() {
                         <Link to="/" className={`nav-link ${isActive('/') ? 'active' : ''}`}>
                             Home
                         </Link>
-                        <Link to="/jobs" className={`nav-link ${isActive('/jobs') ? 'active' : ''}`}>
-                            Find Jobs
-                        </Link>
-                        {isAuthenticated && user?.role === 'client' && (
+
+                        {(!user || user.role === 'freelancer') && (
+                            <Link to="/jobs" className={`nav-link ${isActive('/jobs') ? 'active' : ''}`}>
+                                Find Jobs
+                            </Link>
+                        )}
+
+                        {user?.role === 'client' && (
                             <Link to="/client/post-job" className={`nav-link ${isActive('/client/post-job') ? 'active' : ''}`}>
                                 Post a Job
                             </Link>
                         )}
+
                         <Link to="/about" className={`nav-link ${isActive('/about') ? 'active' : ''}`}>
                             About
                         </Link>
@@ -169,7 +178,15 @@ function Navbar() {
                 {mobileMenuOpen && (
                     <div className="mobile-menu">
                         <Link to="/" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Home</Link>
-                        <Link to="/jobs" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Find Jobs</Link>
+
+                        {(!user || user.role === 'freelancer') && (
+                            <Link to="/jobs" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Find Jobs</Link>
+                        )}
+
+                        {user?.role === 'client' && (
+                            <Link to="/client/post-job" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>Post a Job</Link>
+                        )}
+
                         <Link to="/about" className="mobile-link" onClick={() => setMobileMenuOpen(false)}>About</Link>
                         <div className="dropdown-divider" />
                         {!isAuthenticated && !isAdminAuthenticated ? (

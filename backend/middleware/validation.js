@@ -83,7 +83,11 @@ export const createJobValidation = [
         .withMessage('Duration is required'),
     body('skills')
         .isArray({ min: 1 })
-        .withMessage('At least one skill is required')
+        .withMessage('At least one skill is required'),
+    body('deadline')
+        .optional()
+        .isISO8601()
+        .withMessage('Deadline must be a valid date')
 ];
 
 // Proposal validation rules
