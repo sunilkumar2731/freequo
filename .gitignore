@@ -35,3 +35,7 @@ backend/serviceAccountKey.json
 *.json.local
 firebase-adminsdk.json
 
+# Documentation and unwanted files
+*.md
+!README.md
+*.zip
