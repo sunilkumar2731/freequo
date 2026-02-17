@@ -1,34 +1,63 @@
+import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
+import { usersAPI } from '../services/api'
 import {
-    ArrowLeft,
-    MapPin,
-    Clock,
-    Star,
-    DollarSign,
-    Briefcase,
-    ExternalLink,
-    CheckCircle,
-    Mail
+    ArrowLeft, MapPin, Clock, Star, DollarSign, Briefcase, ExternalLink,
+    CheckCircle, Mail, Loader2
 } from 'lucide-react'
 import './FreelancerProfile.css'
 
 function FreelancerProfile() {
     const { id } = useParams()
-    const { getUserById } = useAuth()
     const { getAppliedJobs } = useData()
+    const [freelancer, setFreelancer] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
 
-    const freelancer = getUserById(id)
-    const appliedJobs = freelancer ? getAppliedJobs(id) : []
+    useEffect(() => {
+        const fetchFreelancer = async () => {
+            try {
+                setLoading(true)
+                const response = await usersAPI.getUser(id)
+                const userData = response.data?.user || response.user
 
-    if (!freelancer || freelancer.role !== 'freelancer') {
+                if (userData) {
+                    setFreelancer(userData)
+                } else {
+                    setError('Freelancer not found')
+                }
+            } catch (err) {
+                console.error('Error fetching freelancer:', err)
+                setError(err.message || 'Failed to load profile')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchFreelancer()
+    }, [id])
+
+    const appliedJobs = freelancer ? getAppliedJobs(freelancer.id || freelancer._id) : []
+
+    if (loading) {
+        return (
+            <div className="profile-page page">
+                <div className="container" style={{ display: 'flex', justifyContent: 'center', padding: '100px 0' }}>
+                    <Loader2 className="animate-spin" size={48} color="var(--primary-500)" />
+                </div>
+            </div>
+        )
+    }
+
+    if (error || !freelancer || freelancer.role !== 'freelancer') {
         return (
             <div className="profile-page page">
                 <div className="container">
                     <div className="not-found">
                         <h2>Freelancer Not Found</h2>
-                        <p>The profile you're looking for doesn't exist.</p>
+                        <p>{error || "The profile you're looking for doesn't exist."}</p>
                         <Link to="/jobs" className="btn btn-primary">
                             Browse Jobs
                         </Link>

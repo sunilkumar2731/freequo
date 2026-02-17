@@ -24,6 +24,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-top: 2rem;
+    /* Added margin to push below navbar */
     margin-bottom: 2rem;
     flex-wrap: wrap;
     gap: 1rem;
@@ -222,6 +224,52 @@
     font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+/* Dark mode specific overrides for stats - Maximum Brightness (White) */
+[data-theme='dark'] .stats-grid .stat-card .stat-value,
+[data-theme='dark'] .stat-value {
+    color: #FFFFFF !important;
+    font-size: 32px !important;
+    font-weight: 800 !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+    -webkit-font-smoothing: antialiased;
+}
+
+[data-theme='dark'] .stat-card {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+    border: 1px solid rgba(236, 205, 6, 0.1) !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme='dark'] .stat-card::before {
+    display: none !important;
+    /* Remove colored strips in dark mode */
+}
+
+[data-theme='dark'] .stat-label {
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    opacity: 1 !important;
+    font-size: 0.875rem !important;
+    /* Slightly larger for brightness */
+    letter-spacing: 0.01em;
+}
+
+[data-theme='dark'] .stat-icon {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #FFFFFF !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+}
+
+[data-theme='dark'] .stat-icon.blue,
+[data-theme='dark'] .stat-icon.green,
+[data-theme='dark'] .stat-icon.purple,
+[data-theme='dark'] .stat-icon.orange {
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: #FFFFFF !important;
 }
 
 .stat-label {
@@ -933,6 +981,35 @@
     border-radius: var(--radius-xl);
     padding: 1.5rem;
     box-shadow: var(--shadow);
+}
+
+/* Dark mode profile card */
+[data-theme='dark'] .profile-summary-card {
+    background: #1E293B !important;
+    border: 1px solid #334155 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme='dark'] .profile-header h3 {
+    color: #FFFFFF !important;
+}
+
+[data-theme='dark'] .profile-header p {
+    color: #94A3B8 !important;
+}
+
+[data-theme='dark'] .profile-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme='dark'] .profile-stat {
+    color: #94A3B8 !important;
+}
+
+[data-theme='dark'] .profile-skills .skill-badge {
+    background: #334155 !important;
+    color: #E2E8F0 !important;
+    border: none !important;
 }
 
 .profile-header {

@@ -109,6 +109,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['email', 'google'],
         default: 'email'
+    },
+    lastLogin: {
+        type: Date
+    },
+    loginCount: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true
@@ -116,7 +123,6 @@ const userSchema = new mongoose.Schema({
 
 // Index for faster queries
 userSchema.index({ role: 1, status: 1 });
-userSchema.index({ email: 1 });
 userSchema.index({ skills: 1 });
 
 // Hash password before saving

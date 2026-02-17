@@ -3,6 +3,46 @@ import Job from '../models/Job.js';
 import Proposal from '../models/Proposal.js';
 import Payment from '../models/Payment.js';
 import Notification from '../models/Notification.js';
+import { sendAdminToUserEmail } from '../services/emailService.js';
+
+// @desc    Send direct email to user (admin)
+// @route   POST /api/admin/users/:id/email
+// @access  Private (Admin)
+export const adminSendEmail = async (req, res) => {
+    try {
+        const { subject, message } = req.body;
+        const userId = req.params.id;
+
+        if (!subject || !message) {
+            return res.status(400).json({
+                success: false,
+                message: 'Subject and message are required'
+            });
+        }
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        await sendAdminToUserEmail(user.email, user.name, subject, message);
+
+        res.json({
+            success: true,
+            message: `Email sent to ${user.email} successfully`
+        });
+
+    } catch (error) {
+        console.error('Admin send email error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error sending email to user'
+        });
+    }
+};
 
 // @desc    Get all users
 // @route   GET /api/admin/users
@@ -251,7 +291,8 @@ export const getPlatformStats = async (req, res) => {
             jobStats,
             paymentStats,
             recentSignups,
-            topFreelancers
+            topFreelancers,
+            recentlyActiveUsers
         ] = await Promise.all([
             // User stats
             User.aggregate([
@@ -293,6 +334,11 @@ export const getPlatformStats = async (req, res) => {
             User.find({ role: 'freelancer' })
                 .select('name title rating completedJobs totalEarnings')
                 .sort({ rating: -1, completedJobs: -1 })
+                .limit(5),
+            // Recently active users
+            User.find({ lastLogin: { $ne: null } })
+                .select('name email role lastLogin')
+                .sort({ lastLogin: -1 })
                 .limit(5)
         ]);
 
@@ -303,7 +349,13 @@ export const getPlatformStats = async (req, res) => {
                 jobStats,
                 paymentStats,
                 recentSignups,
-                topFreelancers
+                topFreelancers,
+                recentlyActive: recentlyActiveUsers,
+                activityStats: {
+                    activeUsers: await User.countDocuments({ lastLogin: { $ne: null } }),
+                    totalLogins: await User.aggregate([{ $group: { _id: null, total: { $sum: "$loginCount" } } }]).then(res => res[0]?.total || 0)
+
+                }
             }
         });
 

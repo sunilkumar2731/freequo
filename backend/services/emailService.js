@@ -233,7 +233,7 @@ const emailTemplates = {
     }),
 
     adminNewUser: (name, email, role, date) => ({
-        subject: 'New User Joined – Freequo',
+        subject: 'New User Joined – Freequo 🚀',
         html: `
         <!DOCTYPE html>
         <html>
@@ -247,12 +247,42 @@ const emailTemplates = {
         </head>
         <body>
             <div class="container">
-                <h2>New User Registered 🚀</h2>
+                <h2 style="color: #6366f1;">New User Registered! 🚀</h2>
                 <div class="content">
+                    <p>A new user has just joined the Freequo community.</p>
                     <div class="detail"><span class="label">Name:</span> ${name}</div>
                     <div class="detail"><span class="label">Email:</span> ${email}</div>
                     <div class="detail"><span class="label">Role:</span> ${role}</div>
                     <div class="detail"><span class="label">Date:</span> ${date}</div>
+                </div>
+            </div>
+        </body>
+        </html>
+        `
+    }),
+
+    adminUserLogin: (name, email, role, date, loginCount) => ({
+        subject: `User Login Activity: ${name} 🔑`,
+        html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                .container { font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #334155; }
+                .content { background: #f1f5f9; border-radius: 12px; border: 1px solid #e2e8f0; padding: 25px; }
+                .label { font-weight: bold; color: #475569; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h3>User Login Detected 🔑</h3>
+                <div class="content">
+                    <p>A user has just logged into the platform.</p>
+                    <p><span class="label">Name:</span> ${name}</p>
+                    <p><span class="label">Email:</span> ${email}</p>
+                    <p><span class="label">Role:</span> ${role}</p>
+                    <p><span class="label">Total Logins:</span> ${loginCount}</p>
+                    <p><span class="label">Time:</span> ${date}</p>
                 </div>
             </div>
         </body>
@@ -290,6 +320,43 @@ const emailTemplates = {
         </body>
         </html>
         `
+    }),
+
+    adminToUser: (userName, subject, message) => ({
+        subject: `${subject} – Freequo Support`,
+        html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                .container { font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #334155; line-height: 1.6; }
+                .header { background: #1e293b; color: white; padding: 25px; text-align: center; border-radius: 12px 12px 0 0; }
+                .content { background: #ffffff; border: 1px solid #e2e8f0; padding: 35px; border-radius: 0 0 12px 12px; }
+                .message-body { background: #f8fafc; border-left: 4px solid #6366f1; padding: 20px; margin: 25px 0; color: #1e293b; font-size: 15px; }
+                .footer { text-align: center; padding: 25px; color: #94a3b8; font-size: 13px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2 style="margin:0">Freequo Administrator</h2>
+                </div>
+                <div class="content">
+                    <p>Hi ${userName},</p>
+                    <p>You have received an official message from the Freequo administration regarding your account.</p>
+                    <div class="message-body">
+                        ${message}
+                    </div>
+                    <p>If you have any questions, please reply to this email or visit our help center.</p>
+                    <p>Best Regards,<br><strong>Freequo Team</strong></p>
+                </div>
+                <div class="footer">
+                    <p>This is an official communication from Freequo. Please keep this email for your records.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `
     })
 };
 
@@ -299,6 +366,9 @@ export const sendWelcomeEmail = (email, name, role) =>
 
 export const sendAdminNewUserEmail = (name, email, role) =>
     sendEmail('freequoo@gmail.com', 'adminNewUser', [name, email, role, new Date().toLocaleString()]);
+
+export const sendAdminLoginNotification = (name, email, role, loginCount) =>
+    sendEmail('freequoo@gmail.com', 'adminUserLogin', [name, email, role, new Date().toLocaleString(), loginCount]);
 
 export const sendApplicationConfirmedEmail = (email, name, jobName, salary, duration, appliedOn) =>
     sendEmail(email, 'applicationConfirmed', [name, jobName, salary, duration, appliedOn]);
@@ -316,6 +386,9 @@ export const sendDirectMessageEmail = (toEmail, senderName, senderEmail, message
 export const sendProposalSubmittedEmail = (email, freelancerName, jobTitle) =>
     sendEmail(email, 'applicationConfirmed', [freelancerName, jobTitle, 'Varies', 'TBD', new Date().toLocaleDateString()]);
 
+export const sendAdminToUserEmail = (userEmail, userName, subject, message) =>
+    sendEmail(userEmail, 'adminToUser', [userName, subject, message]);
+
 export const sendJobPostedEmail = (email, name, jobTitle) =>
     sendEmail(email, 'welcome', [name, 'client']); // Fallback
 
@@ -323,10 +396,12 @@ export default {
     sendEmail,
     sendWelcomeEmail,
     sendAdminNewUserEmail,
+    sendAdminLoginNotification,
     sendApplicationConfirmedEmail,
     sendProposalReceivedEmail,
     sendProposalAcceptedEmail,
     sendProposalSubmittedEmail,
     sendJobPostedEmail,
-    sendDirectMessageEmail
+    sendDirectMessageEmail,
+    sendAdminToUserEmail
 };

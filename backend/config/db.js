@@ -1,4 +1,12 @@
 import mongoose from 'mongoose';
+import dns from 'dns';
+
+// Fix for DNS issues (SRV records) on some networks
+try {
+    dns.setServers(['1.1.1.1', '8.8.4.4', '8.8.8.8']);
+} catch (e) {
+    console.warn('⚠️ Could not set custom DNS servers:', e.message);
+}
 
 const connectDB = async () => {
     const mongoUri = process.env.MONGODB_URI;

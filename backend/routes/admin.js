@@ -5,7 +5,8 @@ import {
     deleteUser,
     getAllJobs,
     adminDeleteJob,
-    getPlatformStats
+    getPlatformStats,
+    adminSendEmail
 } from '../controllers/adminController.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { validate, mongoIdParam } from '../middleware/validation.js';
@@ -20,6 +21,7 @@ router.use(protect, authorize('admin'));
 router.get('/users', getAllUsers);
 router.put('/users/:id/status', mongoIdParam('id'), validate, updateUserStatus);
 router.delete('/users/:id', mongoIdParam('id'), validate, deleteUser);
+router.post('/users/:id/email', mongoIdParam('id'), validate, adminSendEmail);
 
 // Job management
 router.get('/jobs', getAllJobs);

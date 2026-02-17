@@ -34,6 +34,9 @@ function AdminPanel() {
 
     const [lastUpdated, setLastUpdated] = useState(new Date())
     const [isRefreshing, setIsRefreshing] = useState(false)
+    const [emailModal, setEmailModal] = useState({ open: false, user: null })
+    const [emailData, setEmailData] = useState({ subject: '', message: '' })
+    const [sendingEmail, setSendingEmail] = useState(false)
 
     const fetchAdminData = async (silent = false) => {
         if (!isAdminAuthenticated) return;
@@ -42,12 +45,23 @@ function AdminPanel() {
             if (!silent) setLoading(true)
             else setIsRefreshing(true)
 
-            const response = await dashboardAPI.getAdminDashboard()
-            const result = response.data || response
+            // Fetch both dashboard and platform stats
+            const [dashResponse, statsResponse] = await Promise.all([
+                dashboardAPI.getAdminDashboard(),
+                adminAPI.getStats()
+            ])
+
+            const dashResult = dashResponse.data || dashResponse
+            const statsResult = statsResponse.data || statsResponse
+
             setData({
-                stats: result.stats || {},
-                users: result.users || [],
-                proposals: result.proposals || []
+                stats: {
+                    ...(dashResult.stats || {}),
+                    ...(statsResult.activityStats || {})
+                },
+                users: dashResult.users || [],
+                proposals: dashResult.proposals || [],
+                recentlyActive: statsResult.recentlyActive || []
             })
             setLastUpdated(new Date())
         } catch (error) {
@@ -58,10 +72,27 @@ function AdminPanel() {
         }
     }
 
+    const handleSendEmail = async (e) => {
+        e.preventDefault()
+        if (!emailModal.user || !emailData.subject || !emailData.message) return
+
+        try {
+            setSendingEmail(true)
+            await adminAPI.sendEmail(emailModal.user._id, emailData)
+            alert(`Email sent successfully to ${emailModal.user.name}`)
+            setEmailModal({ open: false, user: null })
+            setEmailData({ subject: '', message: '' })
+        } catch (error) {
+            console.error('Error sending email:', error)
+            alert('Failed to send email. Please try again.')
+        } finally {
+            setSendingEmail(false)
+        }
+    }
+
     useEffect(() => {
         fetchAdminData()
 
-        // Auto-refresh every 30 seconds to keep data live
         const interval = setInterval(() => {
             fetchAdminData(true)
         }, 30000)
@@ -145,7 +176,7 @@ function AdminPanel() {
                             <span className="stat-value">{data.stats.totalUsers || 0}</span>
                             <span className="stat-label">Total Users</span>
                         </div>
-                        <div className="stat-sub">{data.stats.activeUsers || 0} active</div>
+                        <div className="stat-sub">{data.stats.activeUsers || 0} active users</div>
                     </div>
                     <div className="admin-stat-card success">
                         <div className="stat-icon-wrap"><Briefcase size={24} /></div>
@@ -166,10 +197,10 @@ function AdminPanel() {
                     <div className="admin-stat-card warning">
                         <div className="stat-icon-wrap"><TrendingUp size={24} /></div>
                         <div>
-                            <span className="stat-value">${(data.stats.totalPayments || 0).toLocaleString()}</span>
-                            <span className="stat-label">GMV</span>
+                            <span className="stat-value">{data.stats.totalLogins || 0}</span>
+                            <span className="stat-label">Platform Engagements</span>
                         </div>
-                        <div className="stat-sub">Total transaction vol</div>
+                        <div className="stat-sub">Total user logins tracked</div>
                     </div>
                 </div>
 
@@ -222,10 +253,20 @@ function AdminPanel() {
                             </div>
                         </div>
                         <div className="admin-section">
-                            <div className="section-header"><h3><ShieldAlert size={18} /> Security Notice</h3></div>
-                            <div className="security-notice-box">
-                                <p>This panel reflects real-time production data from the database. All actions are logged under the platform owner ID.</p>
-                                <div className="last-sync">Last synced: {new Date().toLocaleTimeString()}</div>
+                            <div className="section-header"><h3><Clock size={18} /> Recently Active Users</h3></div>
+                            <div className="active-users-list">
+                                {(data.recentlyActive || []).map(u => (
+                                    <div key={u._id} className="active-user-item">
+                                        <div className="user-info">
+                                            <strong>{u.name}</strong>
+                                            <span>{u.email}</span>
+                                        </div>
+                                        <div className="login-time">
+                                            {formatDate(u.lastLogin)} at {new Date(u.lastLogin).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
+                                    </div>
+                                ))}
+                                {(!data.recentlyActive || data.recentlyActive.length === 0) && <p style={{ color: 'var(--text-tertiary)', fontSize: '0.875rem' }}>No recent activity tracked yet.</p>}
                             </div>
                         </div>
                     </div>
@@ -262,6 +303,7 @@ function AdminPanel() {
                                         <th>Signup Method</th>
                                         <th>Status</th>
                                         <th>Joined On</th>
+                                        <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -296,6 +338,24 @@ function AdminPanel() {
                                                 </span>
                                             </td>
                                             <td className="date-cell">{formatDate(u.createdAt)}</td>
+                                            <td>
+                                                <div className="action-buttons">
+                                                    <Link
+                                                        to={u.role === 'freelancer' ? `/freelancer/${u._id}` : `/client/${u._id}`}
+                                                        className="action-btn"
+                                                        title="View Profile"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </Link>
+                                                    <button
+                                                        className="action-btn"
+                                                        title="Send Email"
+                                                        onClick={() => setEmailModal({ open: true, user: u })}
+                                                    >
+                                                        <Mail size={18} />
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -372,8 +432,48 @@ function AdminPanel() {
                     </div>
                 )}
             </div>
+
+            {/* Email Modal */}
+            {emailModal.open && (
+                <div className="admin-modal-overlay">
+                    <div className="admin-modal">
+                        <div className="modal-header">
+                            <h3>Send Message to {emailModal.user?.name}</h3>
+                            <button className="close-btn" onClick={() => setEmailModal({ open: false, user: null })}>×</button>
+                        </div>
+                        <form onSubmit={handleSendEmail} className="email-form">
+                            <div className="form-group">
+                                <label>Subject</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g., Account Verification Update"
+                                    value={emailData.subject}
+                                    onChange={(e) => setEmailData({ ...emailData, subject: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label>Message</label>
+                                <textarea
+                                    rows="6"
+                                    placeholder="Write your official message here..."
+                                    value={emailData.message}
+                                    onChange={(e) => setEmailData({ ...emailData, message: e.target.value })}
+                                    required
+                                ></textarea>
+                            </div>
+                            <div className="modal-actions">
+                                <button type="button" className="btn btn-outline" onClick={() => setEmailModal({ open: false, user: null })}>Cancel</button>
+                                <button type="submit" className="btn btn-primary" disabled={sendingEmail}>
+                                    {sendingEmail ? <><Loader2 className="animate-spin" size={16} /> Sending...</> : 'Send Email Now'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
 
-export default AdminPanel
+export default AdminPanel;

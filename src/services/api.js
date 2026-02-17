@@ -15,7 +15,9 @@ const api = axios.create({
 // Request interceptor - adds auth token to every request
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('freequo_token');
+        // Try to get standard token first, then admin token
+        const token = localStorage.getItem('freequo_token') || sessionStorage.getItem('freequo_admin_token');
+
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
             console.log(`📡 API Request: ${config.method.toUpperCase()} ${config.url} [TOKEN PRESENT]`);
@@ -178,7 +180,8 @@ export const adminAPI = {
     deleteUser: (id) => api.delete(`/admin/users/${id}`),
     getJobs: (params = {}) => api.get('/admin/jobs', { params }),
     deleteJob: (id) => api.delete(`/admin/jobs/${id}`),
-    getStats: () => api.get('/admin/stats')
+    getStats: () => api.get('/admin/stats'),
+    sendEmail: (id, data) => api.post(`/admin/users/${id}/email`, data)
 };
 
 // ========================================

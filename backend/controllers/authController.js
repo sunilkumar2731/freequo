@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
 import admin from '../config/firebase.js';
-import { sendWelcomeEmail, sendAdminNewUserEmail } from '../services/emailService.js';
+import { sendWelcomeEmail, sendAdminNewUserEmail, sendAdminLoginNotification } from '../services/emailService.js';
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -202,6 +202,16 @@ export const login = async (req, res) => {
                 message: 'Your account has been suspended. Please contact support.'
             });
         }
+
+        // Update login tracking
+        user.lastLogin = new Date();
+        user.loginCount = (user.loginCount || 0) + 1;
+        await user.save({ validateBeforeSave: false });
+
+        // Notify admin of login activity (Background)
+        sendAdminLoginNotification(user.name, user.email, user.role, user.loginCount).catch(err => {
+            console.error('Admin login notification error:', err);
+        });
 
         // Generate token
         const authToken = generateToken(user._id);
