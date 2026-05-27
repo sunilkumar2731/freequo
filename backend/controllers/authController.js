@@ -210,9 +210,9 @@ export const login = async (req, res) => {
         user.loginCount = (user.loginCount || 0) + 1;
         await user.save({ validateBeforeSave: false });
 
-        // Notify admin of login activity (Background)
-        sendAdminLoginNotification(user.name, user.email, user.role, user.loginCount).catch(err => {
-            console.error('Admin login notification error:', err);
+        // Notify respective user of login activity (Background)
+        sendUserLoginNotification(user.email, user.name, user.role).catch(err => {
+            console.error('User login notification error:', err);
         });
 
 
