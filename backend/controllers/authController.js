@@ -210,11 +210,6 @@ export const login = async (req, res) => {
         user.loginCount = (user.loginCount || 0) + 1;
         await user.save({ validateBeforeSave: false });
 
-        // Notify respective user of login activity (Background)
-        sendUserLoginNotification(user.email, user.name, user.role).catch(err => {
-            console.error('User login notification error:', err);
-        });
-
 
         // Generate token
         const authToken = generateToken(user._id);
