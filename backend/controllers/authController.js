@@ -2,7 +2,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
 import Notification from '../models/Notification.js';
 import admin from '../config/firebase.js';
-import { sendWelcomeEmail, sendAdminNewUserEmail, sendAdminLoginNotification } from '../services/emailService.js';
+import { sendWelcomeEmail, sendAdminNewUserEmail, sendAdminLoginNotification, sendUserLoginNotification } from '../services/emailService.js';
 
 // Generate JWT Token
 const generateToken = (userId) => {
@@ -107,6 +107,7 @@ export const login = async (req, res) => {
         const { email, password, firebaseToken, isSocial, role = 'freelancer' } = req.body;
 
         let user;
+        let isNewUser = false;
 
         // Handle Social Login (Google/Firebase)
         if (isSocial && firebaseToken) {
@@ -128,6 +129,7 @@ export const login = async (req, res) => {
 
                 if (!user) {
                     console.log(`✨ Creating new social user for email: ${fbEmail}`);
+                    isNewUser = true;
                     // Create new user if they don't exist
                     user = await User.create({
                         email: fbEmail,
@@ -212,6 +214,7 @@ export const login = async (req, res) => {
         sendAdminLoginNotification(user.name, user.email, user.role, user.loginCount).catch(err => {
             console.error('Admin login notification error:', err);
         });
+
 
         // Generate token
         const authToken = generateToken(user._id);

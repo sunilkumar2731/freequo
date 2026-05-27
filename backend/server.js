@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/db.js';
 
 // Route files
@@ -43,6 +45,22 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api', emailRoutes); // Mounts /api/send-application-email and /api/health
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve static files from the React frontend build folder
+const buildPath = path.join(__dirname, '../dist');
+app.use(express.static(buildPath));
+
+// Wildcard routing to serve index.html for client-side routing
+app.get('*', (req, res, next) => {
+    // Skip API paths so they return proper 404/errors instead of HTML
+    if (req.path.startsWith('/api')) {
+        return next();
+    }
+    res.sendFile(path.join(buildPath, 'index.html'));
+});
 
 // Start Firestore Listener (Background)
 try {

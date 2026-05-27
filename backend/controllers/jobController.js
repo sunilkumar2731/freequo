@@ -172,7 +172,7 @@ export const createJob = async (req, res) => {
 
         // Send confirmation email to client
         try {
-            await sendJobPostedEmail(req.user.email, req.user.name, job.title);
+            await sendJobPostedEmail(req.user.email, req.user.name, job.title, job.budget, job.category);
         } catch (emailError) {
             console.error('Failed to send job posted email:', emailError);
         }

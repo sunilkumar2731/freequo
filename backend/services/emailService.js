@@ -1,5 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
@@ -7,52 +8,90 @@ const BREVO_API_KEY = process.env.BREVO_API_KEY;
 const SENDER_EMAIL = process.env.EMAIL_USER || 'freequoo@gmail.com';
 const SENDER_NAME = 'Freequo';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://freequo-frontend.onrender.com';
-const LOGO_URL = `${FRONTEND_URL}/freequo-logo.png`;
-const ICON_URL = `${FRONTEND_URL}/f-logo.png`;
+// Use the production URL for email assets so Gmail can fetch them (localhost isn't accessible to Gmail)
+const IMAGES_BASE_URL = 'https://freequo-frontend.onrender.com';
+const LOGO_URL = `${IMAGES_BASE_URL}/freequo-logo.png`;
+const ICON_URL = `${IMAGES_BASE_URL}/f-logo.png`;
 
-/**
- * Centralized function to send email via Brevo REST API (HTTPS)
- * This bypasses Render's SMTP block.
- */
-export const sendEmail = async (to, templateName, templateData) => {
-    if (!BREVO_API_KEY) {
-        console.warn('🛑 BREVO_API_KEY missing. Cannot send email to:', to);
-        return false;
-    }
-
+// Initialize Nodemailer transporter if Gmail credentials are available
+let transporter = null;
+if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
     try {
-        const template = emailTemplates[templateName];
-        if (!template) {
-            console.error(`Email template '${templateName}' not found`);
-            return false;
-        }
-
-        const { subject, html } = template(...templateData);
-
-        console.log(`✅ Attempting to send email to ${to} via Brevo API...`);
-
-        const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
-            sender: { name: SENDER_NAME, email: SENDER_EMAIL },
-            to: [{ email: to }],
-            subject: subject,
-            htmlContent: html
-        }, {
-            headers: {
-                'api-key': BREVO_API_KEY,
-                'Content-Type': 'application/json'
+        transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.EMAIL_USER,
+                pass: process.env.EMAIL_PASSWORD
             }
         });
+        console.log('📬 Nodemailer SMTP transporter initialized with Gmail credentials.');
+    } catch (err) {
+        console.error('❌ Failed to initialize Nodemailer transporter:', err.message);
+    }
+}
 
-        if (response.status === 201 || response.status === 200) {
-            console.log(`✅ Email sent successfully via Brevo! ID: ${response.data.messageId}`);
-            return true;
-        }
-
-        return false;
-    } catch (error) {
-        console.error(`❌ Brevo API Error for ${to}:`, error.response?.data || error.message);
+/**
+ * Centralized function to send email via Brevo REST API (HTTPS) or Gmail SMTP (Fallback)
+ */
+export const sendEmail = async (to, templateName, templateData) => {
+    const template = emailTemplates[templateName];
+    if (!template) {
+        console.error(`Email template '${templateName}' not found`);
         return false;
     }
+
+    const { subject, html } = template(...templateData);
+    let sentSuccess = false;
+
+    // Method 1: Try Brevo API first if key is present
+    if (BREVO_API_KEY) {
+        try {
+            console.log(`✅ Attempting to send email to ${to} via Brevo API...`);
+            const response = await axios.post('https://api.brevo.com/v3/smtp/email', {
+                sender: { name: SENDER_NAME, email: SENDER_EMAIL },
+                to: [{ email: to }],
+                subject: subject,
+                htmlContent: html
+            }, {
+                headers: {
+                    'api-key': BREVO_API_KEY,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (response.status === 201 || response.status === 200) {
+                console.log(`✅ Email sent successfully via Brevo! ID: ${response.data.messageId}`);
+                sentSuccess = true;
+            }
+        } catch (error) {
+            console.warn(`⚠️ Brevo API Error for ${to}:`, error.response?.data || error.message);
+            console.log('🔄 Attempting fallback to Nodemailer Gmail SMTP...');
+        }
+    }
+
+    // Method 2: Fallback to Nodemailer Gmail SMTP if Brevo was not used or failed
+    if (!sentSuccess && transporter) {
+        try {
+            console.log(`✅ Attempting to send email to ${to} via Gmail SMTP...`);
+            const info = await transporter.sendMail({
+                from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
+                to: to,
+                subject: subject,
+                html: html
+            });
+
+            console.log(`✅ Email sent successfully via Gmail SMTP! ID: ${info.messageId}`);
+            sentSuccess = true;
+        } catch (error) {
+            console.error(`❌ Gmail SMTP Error for ${to}:`, error.message);
+        }
+    }
+
+    if (!sentSuccess) {
+        console.error(`❌ Failed to send email to ${to} using any available methods.`);
+    }
+
+    return sentSuccess;
 };
 
 // --- Email Templates ---
@@ -357,6 +396,127 @@ const emailTemplates = {
         </body>
         </html>
         `
+    }),
+
+    userLogin: (name, email, role, date) => ({
+        subject: 'Security Alert: New Login Detected 🔑',
+        html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                .container { font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #334155; line-height: 1.6; }
+                .header { text-align: center; padding: 20px 0; }
+                .content { background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+                .banner { background: #1e293b; color: white; padding: 30px; text-align: center; }
+                .body-content { padding: 30px; }
+                .details-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+                .detail-row:last-child { border: none; }
+                .label { color: #64748b; font-weight: 500; }
+                .value { color: #1e293b; font-weight: 600; }
+                .warning-text { background: #fffbeb; border-left: 4px solid #f59e0b; color: #b45309; padding: 15px; border-radius: 4px; font-size: 14px; margin: 20px 0; }
+                .btn { display: inline-block; background: #6366f1; color: white !important; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 10px; }
+                .footer { text-align: center; padding: 20px; font-size: 12px; color: #64748b; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div style="background: white; padding: 20px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                        <img src="${LOGO_URL}" alt="Freequo" style="height: 100px; width: auto; display: block; margin: 0 auto;">
+                        <p style="margin: 10px 0 0; color: #64748b; font-size: 13px; font-weight: 500;">Your trusted freelance partner</p>
+                    </div>
+                </div>
+                <div class="content">
+                    <div class="banner">
+                        <h2 style="margin:0; font-size: 20px;">Security Alert: New Login</h2>
+                    </div>
+                    <div class="body-content">
+                        <p>Hi <strong>${name}</strong>,</p>
+                        <p>We detected a new login to your Freequo account (<strong>${email}</strong>).</p>
+                        
+                        <div class="details-card">
+                            <div class="detail-row"><span class="label">Date & Time:</span><span class="value">${date}</span></div>
+                            <div class="detail-row"><span class="label">Account Role:</span><span class="value">${role}</span></div>
+                        </div>
+
+                        <div class="warning-text">
+                            <strong>Was this you?</strong> If you recently logged in to your account, you can safely ignore this email. If you do not recognize this activity, please secure your account immediately.
+                        </div>
+
+                        <div style="text-align: center;">
+                            <a href="${FRONTEND_URL}/change-password" class="btn">Secure Account</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>© Freequo. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `
+    }),
+
+    jobPosted: (name, jobTitle, budget, category) => ({
+        subject: `Your Job "${jobTitle}" has been posted successfully! 🚀`,
+        html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                .container { font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #334155; line-height: 1.6; }
+                .header { text-align: center; padding: 20px 0; }
+                .logo { height: 100px; }
+                .content { background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+                .banner { background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 40px 20px; text-align: center; }
+                .body-content { padding: 30px; }
+                .details-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0; }
+                .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+                .detail-row:last-child { border: none; }
+                .label { color: #64748b; font-weight: 500; }
+                .value { color: #1e293b; font-weight: 600; }
+                .btn { display: inline-block; background: #6366f1; color: white !important; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 15px; }
+                .footer { text-align: center; padding: 20px; font-size: 12px; color: #64748b; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <div style="background: white; padding: 20px; border-radius: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                        <img src="${LOGO_URL}" alt="Freequo" style="height: 100px; width: auto; display: block; margin: 0 auto;">
+                        <p style="margin: 10px 0 0; color: #64748b; font-size: 13px; font-weight: 500;">Your trusted freelance partner</p>
+                    </div>
+                </div>
+                <div class="content">
+                    <div class="banner">
+                        <h1 style="margin:0; font-size: 24px;">Job Posted Successfully!</h1>
+                    </div>
+                    <div class="body-content">
+                        <p>Hi <strong>${name}</strong>,</p>
+                        <p>Your job has been published on the platform and is now open for proposals from top freelancers.</p>
+                        
+                        <div class="details-card">
+                            <div class="detail-row"><span class="label">Job Title:</span><span class="value">${jobTitle}</span></div>
+                            <div class="detail-row"><span class="label">Budget:</span><span class="value">$${budget}</span></div>
+                            <div class="detail-row"><span class="label">Category:</span><span class="value">${category}</span></div>
+                        </div>
+
+                        <p>You will receive email notifications as soon as freelancers submit proposals for your review.</p>
+
+                        <div style="text-align: center;">
+                            <a href="${FRONTEND_URL}/client/dashboard" class="btn">Manage Your Job</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer">
+                    <p>© Freequo. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        `
     })
 };
 
@@ -369,6 +529,9 @@ export const sendAdminNewUserEmail = (name, email, role) =>
 
 export const sendAdminLoginNotification = (name, email, role, loginCount) =>
     sendEmail('freequoo@gmail.com', 'adminUserLogin', [name, email, role, new Date().toLocaleString(), loginCount]);
+
+export const sendUserLoginNotification = (email, name, role) =>
+    sendEmail(email, 'userLogin', [name, email, role, new Date().toLocaleString()]);
 
 export const sendApplicationConfirmedEmail = (email, name, jobName, salary, duration, appliedOn) =>
     sendEmail(email, 'applicationConfirmed', [name, jobName, salary, duration, appliedOn]);
@@ -389,14 +552,15 @@ export const sendProposalSubmittedEmail = (email, freelancerName, jobTitle) =>
 export const sendAdminToUserEmail = (userEmail, userName, subject, message) =>
     sendEmail(userEmail, 'adminToUser', [userName, subject, message]);
 
-export const sendJobPostedEmail = (email, name, jobTitle) =>
-    sendEmail(email, 'welcome', [name, 'client']); // Fallback
+export const sendJobPostedEmail = (email, name, jobTitle, budget = 'TBD', category = 'General') =>
+    sendEmail(email, 'jobPosted', [name, jobTitle, budget, category]);
 
 export default {
     sendEmail,
     sendWelcomeEmail,
     sendAdminNewUserEmail,
     sendAdminLoginNotification,
+    sendUserLoginNotification,
     sendApplicationConfirmedEmail,
     sendProposalReceivedEmail,
     sendProposalAcceptedEmail,
