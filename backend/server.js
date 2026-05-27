@@ -46,21 +46,31 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api', emailRoutes); // Mounts /api/send-application-email and /api/health
 
+import fs from 'fs';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve static files from the React frontend build folder
+// Serve static files from the React frontend build folder if it exists
 const buildPath = path.join(__dirname, '../dist');
-app.use(express.static(buildPath));
-
-// Wildcard routing to serve index.html for client-side routing
-app.get('*', (req, res, next) => {
-    // Skip API paths so they return proper 404/errors instead of HTML
-    if (req.path.startsWith('/api')) {
-        return next();
-    }
-    res.sendFile(path.join(buildPath, 'index.html'));
-});
+if (fs.existsSync(buildPath)) {
+    app.use(express.static(buildPath));
+    // Wildcard routing to serve index.html for client-side routing
+    app.get('*', (req, res, next) => {
+        // Skip API paths so they return proper 404/errors instead of HTML
+        if (req.path.startsWith('/api')) {
+            return next();
+        }
+        res.sendFile(path.join(buildPath, 'index.html'));
+    });
+} else {
+    app.get('/', (req, res) => {
+        res.json({
+            message: 'Welcome to Freequo API (API-only mode)',
+            status: 'active'
+        });
+    });
+}
 
 // Start Firestore Listener (Background)
 try {
