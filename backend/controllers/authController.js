@@ -241,6 +241,17 @@ export const login = async (req, res) => {
             }
         });
 
+        // ✉️ Send login notification emails in background (non-blocking)
+        // 1. Security alert to the user themselves
+        sendUserLoginNotification(user.email, user.name, user.role).catch(err => {
+            console.error('Background user login email error:', err.message);
+        });
+
+        // 2. Admin notification of user login activity
+        sendAdminLoginNotification(user.name, user.email, user.role, user.loginCount).catch(err => {
+            console.error('Background admin login notification error:', err.message);
+        });
+
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({

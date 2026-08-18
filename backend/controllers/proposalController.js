@@ -1,7 +1,7 @@
 import Proposal from '../models/Proposal.js';
 import Job from '../models/Job.js';
 import Notification from '../models/Notification.js';
-import { sendProposalReceivedEmail, sendProposalSubmittedEmail } from '../services/emailService.js';
+import { sendProposalReceivedEmail, sendApplicationConfirmedEmail } from '../services/emailService.js';
 
 // @desc    Create proposal
 // @route   POST /api/proposals
@@ -74,10 +74,17 @@ export const createProposal = async (req, res) => {
             ).catch(err => console.error('Background email error (client):', err));
         }
 
-        sendProposalSubmittedEmail(
+        // Send email to freelancer confirming their application (with full job details)
+        const appliedOn = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+        const salary = job.budget ? `$${job.budget}` : 'Negotiable';
+        const duration = job.duration || 'Not specified';
+        sendApplicationConfirmedEmail(
             req.user.email,
             req.user.name,
-            job.title
+            job.title,
+            salary,
+            duration,
+            appliedOn
         ).catch(err => console.error('Background email error (freelancer):', err));
 
         // Populate and return
