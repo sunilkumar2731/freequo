@@ -1,0 +1,27 @@
+services:
+  # Frontend Static Site
+  - type: web
+    name: freequo-frontend
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    headers:
+      - path: /*
+        name: Cross-Origin-Opener-Policy
+        value: same-origin-allow-popups
+      - path: /*
+        name: Cross-Origin-Embedder-Policy
+        value: unsafe-none
+
+  # Backend API
+  - type: web
+    name: freequo
+    env: node
+    region: oregon
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
