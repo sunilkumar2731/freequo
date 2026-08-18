@@ -112,6 +112,15 @@ export const login = async (req, res) => {
         // Handle Social Login (Google/Firebase)
         if (isSocial && firebaseToken) {
             try {
+                // Guard: Firebase Admin must be initialized (needs FIREBASE_SERVICE_ACCOUNT_JSON on Render)
+                if (!admin.apps.length) {
+                    console.error('❌ Firebase Admin not initialized. Set FIREBASE_SERVICE_ACCOUNT_JSON env var on Render.');
+                    return res.status(503).json({
+                        success: false,
+                        message: 'Google login is temporarily unavailable. Please try email/password login or contact support.'
+                    });
+                }
+
                 // Verify Firebase Token
                 const decodedToken = await admin.auth().verifyIdToken(firebaseToken);
                 const fbEmail = decodedToken.email;
@@ -152,14 +161,17 @@ export const login = async (req, res) => {
                         actionUrl: user.role === 'freelancer' ? '/freelancer/edit-profile' : '/client/dashboard'
                     });
 
-                    // Send welcome email for social login
-                    try {
-                        await sendWelcomeEmail(user.email, user.name, user.role);
-                        await sendAdminNewUserEmail(user.name, user.email, user.role);
-                    } catch (emailError) {
-                        console.error('Failed to send notification emails (social):', emailError);
-                    }
+                    // Send welcome email for new Google user
+                    sendWelcomeEmail(user.email, user.name, user.role).catch(err =>
+                        console.error('Failed to send welcome email (social):', err));
+                    sendAdminNewUserEmail(user.name, user.email, user.role).catch(err =>
+                        console.error('Failed to send admin new user email (social):', err));
                 }
+                // For returning Google users, update login tracking
+                user.lastLogin = new Date();
+                user.loginCount = (user.loginCount || 0) + 1;
+                await user.save({ validateBeforeSave: false });
+
             } catch (fbError) {
                 console.error('Firebase token verification failed:', fbError);
                 return res.status(401).json({
@@ -205,10 +217,12 @@ export const login = async (req, res) => {
             });
         }
 
-        // Update login tracking
-        user.lastLogin = new Date();
-        user.loginCount = (user.loginCount || 0) + 1;
-        await user.save({ validateBeforeSave: false });
+        // Update login tracking (only for email/password — social login already updated above)
+        if (!isSocial) {
+            user.lastLogin = new Date();
+            user.loginCount = (user.loginCount || 0) + 1;
+            await user.save({ validateBeforeSave: false });
+        }
 
 
         // Generate token

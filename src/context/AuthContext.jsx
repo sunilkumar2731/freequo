@@ -163,28 +163,44 @@ export function AuthProvider({ children }) {
         try {
             setLoading(true)
             console.log('🚀 Starting Google Login...')
-            const result = await signInWithPopup(auth, googleProvider)
+
+            // Step 1: Authenticate with Google via Firebase popup
+            let result;
+            try {
+                result = await signInWithPopup(auth, googleProvider)
+            } catch (popupError) {
+                console.error('❌ Google Popup Error:', popupError.code, popupError.message)
+                setLoading(false)
+                // User closed popup or popup blocked — give friendly message
+                if (popupError.code === 'auth/popup-closed-by-user' || popupError.code === 'auth/cancelled-popup-request') {
+                    return { success: false, error: 'Google sign-in was cancelled. Please try again.' }
+                }
+                if (popupError.code === 'auth/popup-blocked') {
+                    return { success: false, error: 'Popup was blocked by your browser. Please allow popups for this site.' }
+                }
+                return { success: false, error: popupError.message || 'Google sign-in failed. Please try again.' }
+            }
+
             const firebaseUser = result.user
             console.log('✅ Firebase Authenticated:', firebaseUser.email)
 
-            // If using API, we should sync with backend
+            // Step 2: Sync with backend (required — not optional)
             if (USE_API) {
                 try {
-                    // Try to login/register with backend using firebase token
-                    const token = await firebaseUser.getIdToken()
+                    const idToken = await firebaseUser.getIdToken(true) // force refresh
                     console.log('📡 Syncing with backend...')
                     const response = await authAPI.googleLogin({
                         email: firebaseUser.email,
-                        firebaseToken: token,
+                        firebaseToken: idToken,
                         isSocial: true,
-                        role // Default role if new user
+                        role
                     })
 
                     console.log('✅ Backend Synced Successfully')
-                    const { user: userData, token: authToken } = response.data || response;
+                    const { user: userData, token: authToken } = response.data || response
 
-                    if (!userData) {
-                        throw new Error(response.message || 'Social login failed: No user data received')
+                    if (!userData || !authToken) {
+                        throw new Error(response.message || 'Google login failed: Invalid response from server')
                     }
 
                     const normalizedUser = userData._id ? { ...userData, id: userData._id } : userData
@@ -197,16 +213,20 @@ export function AuthProvider({ children }) {
                     setLoading(false)
                     return { success: true, user: normalizedUser }
                 } catch (apiError) {
-                    console.error('API Sync failed, falling back to Firebase only:', apiError)
-                    // If backend fails, we might still want to allow login if it's a demo or if we handle it client-side
+                    console.error('❌ Backend sync failed:', apiError)
+                    setLoading(false)
+                    // Surface the real error — don't silently fall through
+                    const msg = apiError.message || 'Could not connect to server. Please try again.'
+                    return { success: false, error: msg }
                 }
             }
 
-            // demo mode or API fallback
+            // Demo / offline mode only
             const newUser = {
                 id: firebaseUser.uid,
                 email: firebaseUser.email,
                 name: firebaseUser.displayName,
+                avatar: firebaseUser.photoURL || '',
                 role: role,
                 status: 'active'
             }
@@ -214,10 +234,11 @@ export function AuthProvider({ children }) {
             localStorage.setItem('freequo_user', JSON.stringify(newUser))
             setLoading(false)
             return { success: true, user: newUser }
+
         } catch (error) {
             console.error('❌ Google Login Error:', error.code, error.message)
             setLoading(false)
-            return { success: false, error: error.message || 'Google login failed' }
+            return { success: false, error: error.message || 'Google login failed. Please try again.' }
         }
     }, [])
 
