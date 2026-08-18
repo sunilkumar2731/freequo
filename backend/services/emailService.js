@@ -399,7 +399,7 @@ const emailTemplates = {
     }),
 
     userLogin: (name, email, role, date) => ({
-        subject: 'Security Alert: New Login Detected 🔑',
+        subject: 'Welcome Back to Freequo! 👋',
         html: `
         <!DOCTYPE html>
         <html>
@@ -408,16 +408,12 @@ const emailTemplates = {
                 .container { font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #334155; line-height: 1.6; }
                 .header { text-align: center; padding: 20px 0; }
                 .content { background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-                .banner { background: #1e293b; color: white; padding: 30px; text-align: center; }
+                .banner { background: linear-gradient(135deg, #6366f1 0%, #10b981 100%); color: white; padding: 40px 20px; text-align: center; }
                 .body-content { padding: 30px; }
-                .details-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin: 20px 0; }
-                .detail-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
-                .detail-row:last-child { border: none; }
-                .label { color: #64748b; font-weight: 500; }
-                .value { color: #1e293b; font-weight: 600; }
-                .warning-text { background: #fffbeb; border-left: 4px solid #f59e0b; color: #b45309; padding: 15px; border-radius: 4px; font-size: 14px; margin: 20px 0; }
-                .btn { display: inline-block; background: #6366f1; color: white !important; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; margin-top: 10px; }
+                .highlight-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 20px; margin: 20px 0; text-align: center; }
+                .btn { display: inline-block; background: linear-gradient(135deg, #6366f1, #10b981); color: white !important; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: 700; margin-top: 20px; font-size: 15px; }
                 .footer { text-align: center; padding: 20px; font-size: 12px; color: #64748b; }
+                .divider { border: none; border-top: 1px solid #e2e8f0; margin: 20px 0; }
             </style>
         </head>
         <body>
@@ -430,28 +426,46 @@ const emailTemplates = {
                 </div>
                 <div class="content">
                     <div class="banner">
-                        <h2 style="margin:0; font-size: 20px;">Security Alert: New Login</h2>
+                        <h1 style="margin: 0 0 8px; font-size: 26px;">Welcome Back! 👋</h1>
+                        <p style="margin: 0; font-size: 15px; opacity: 0.9;">Great to see you again, ${name}!</p>
                     </div>
                     <div class="body-content">
-                        <p>Hi <strong>${name}</strong>,</p>
-                        <p>We detected a new login to your Freequo account (<strong>${email}</strong>).</p>
-                        
-                        <div class="details-card">
-                            <div class="detail-row"><span class="label">Date & Time:</span><span class="value">${date}</span></div>
-                            <div class="detail-row"><span class="label">Account Role:</span><span class="value">${role}</span></div>
+                        <p style="font-size: 15px;">Hi <strong>${name}</strong>,</p>
+                        <p style="font-size: 15px; color: #475569;">
+                            You've successfully logged in to your Freequo account as a <strong>${role}</strong>.
+                            We're glad you're back — your opportunities await!
+                        </p>
+
+                        <div class="highlight-box">
+                            <p style="margin: 0; font-size: 22px;">🎯</p>
+                            <p style="margin: 8px 0 0; font-weight: 600; color: #166534; font-size: 15px;">
+                                ${role === 'client'
+                                    ? 'Ready to find the perfect freelancer for your project?'
+                                    : 'Ready to discover exciting new opportunities?'}
+                            </p>
+                            <p style="margin: 6px 0 0; font-size: 13px; color: #64748b;">
+                                ${role === 'client'
+                                    ? 'Post a job or review your existing proposals today.'
+                                    : 'Browse the latest jobs and apply to projects that match your skills.'}
+                            </p>
                         </div>
 
-                        <div class="warning-text">
-                            <strong>Was this you?</strong> If you recently logged in to your account, you can safely ignore this email. If you do not recognize this activity, please secure your account immediately.
-                        </div>
+                        <hr class="divider">
 
                         <div style="text-align: center;">
-                            <a href="${FRONTEND_URL}/change-password" class="btn">Secure Account</a>
+                            <a href="${FRONTEND_URL}/${role === 'client' ? 'client/dashboard' : role === 'freelancer' ? 'freelancer/dashboard' : 'admin/dashboard'}" class="btn">
+                                Go to My Dashboard →
+                            </a>
                         </div>
+
+                        <p style="margin-top: 25px; font-size: 13px; color: #94a3b8; text-align: center;">
+                            Logged in on ${date}
+                        </p>
                     </div>
                 </div>
                 <div class="footer">
                     <p>© Freequo. All rights reserved.</p>
+                    <p style="margin: 4px 0 0;">Connecting talent with opportunity.</p>
                 </div>
             </div>
         </body>
